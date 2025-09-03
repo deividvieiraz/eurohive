@@ -17,7 +17,7 @@ class _EuroHiveState extends State<EuroHive> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ABC Math',
+      title: 'EuroHive',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       initialRoute: AppRoutes.login,
