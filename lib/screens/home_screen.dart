@@ -9,123 +9,58 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        backgroundColor: AppColors.blue,
-        foregroundColor: AppColors.white,
-        title: const Text('EuroHive'),
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+    return Column(
+      children: [
+        _buildAppBar(),
+        Expanded(
+          child: _buildBody(),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.person_outline),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      drawer: _buildDrawer(),
-      body: _buildBody(),
+      ],
     );
   }
 
-  Widget _buildDrawer() {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(
-              color: AppColors.blue,
+  Widget _buildAppBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: const BoxDecoration(
+        color: AppColors.blue,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+      ),
+      child: SafeArea(
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.menu, color: AppColors.white),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: AppColors.white,
-                  child: Icon(
-                    Icons.person,
-                    size: 35,
-                    color: AppColors.blue,
-                  ),
+            const Expanded(
+              child: Text(
+                'EuroHive',
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Usuário EuroHive',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Text(
-                  'usuario@eurohive.com',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.home),
-            title: const Text('Início'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.article),
-            title: const Text('Feed'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navegar para Feed Screen
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.explore),
-            title: const Text('Descobrir'),
-            onTap: () {
-              Navigator.pop(context);
-              // Navegar para Discovery Screen
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Configurações'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.help),
-            title: const Text('Ajuda'),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Sair'),
-            onTap: () {
-              Navigator.pop(context);
-              // Implementar logout
-            },
-          ),
-        ],
+            IconButton(
+              icon: const Icon(Icons.notifications_outlined, color: AppColors.white),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.person_outline, color: AppColors.white),
+              onPressed: () {},
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -173,10 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(height: 8),
           Text(
             'Descubra novas ideias e conecte-se com outros desenvolvedores',
-            style: TextStyle(
-              color: AppColors.white,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: AppColors.white, fontSize: 16),
           ),
         ],
       ),
@@ -227,22 +159,18 @@ class _HomeScreenState extends State<HomeScreen> {
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(12),
-                 boxShadow: [
-           BoxShadow(
-             color: Colors.grey.withValues(alpha: 0.1),
-             spreadRadius: 1,
-             blurRadius: 4,
-             offset: const Offset(0, 2),
-           ),
-         ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 32,
-          ),
+          Icon(icon, color: color, size: 32),
           const SizedBox(height: 8),
           Text(
             value,
@@ -252,13 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
               color: color,
             ),
           ),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
-          ),
+          Text(title, style: const TextStyle(fontSize: 14, color: Colors.grey)),
         ],
       ),
     );
@@ -270,10 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         const Text(
           'Últimas Notícias',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -295,12 +214,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       Container(
                         height: 120,
-                                                 decoration: BoxDecoration(
-                           color: AppColors.lightBlue.withValues(alpha: 0.3),
-                           borderRadius: const BorderRadius.vertical(
-                             top: Radius.circular(12),
-                           ),
-                         ),
+                        decoration: BoxDecoration(
+                          color: AppColors.lightBlue.withValues(alpha: 0.3),
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                        ),
                         child: const Center(
                           child: Icon(
                             Icons.article,
@@ -351,10 +270,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         const Text(
           'Projetos Recentes',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         ListView.builder(
