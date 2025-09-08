@@ -1,5 +1,6 @@
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'create_post_screen.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -9,7 +10,7 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  final TextEditingController _postController = TextEditingController();
+  final List<String> _posts = [];
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +41,19 @@ class _FeedScreenState extends State<FeedScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.blue,
         foregroundColor: AppColors.white,
-        onPressed: () {
-          _showCreatePostDialog();
+        onPressed: () async {
+          final newPost = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CreatePostScreen(),
+            ),
+          );
+
+          if (newPost != null && newPost.isNotEmpty) {
+            setState(() {
+              _posts.insert(0, newPost);
+            });
+          }
         },
         child: const Icon(Icons.add),
       ),
@@ -53,14 +65,14 @@ class _FeedScreenState extends State<FeedScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-                 boxShadow: [
-           BoxShadow(
-             color: Colors.grey.withValues(alpha: 0.1),
-             spreadRadius: 1,
-             blurRadius: 4,
-             offset: const Offset(0, 2),
-           ),
-         ],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withValues(alpha: 0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -74,8 +86,19 @@ class _FeedScreenState extends State<FeedScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: GestureDetector(
-              onTap: () {
-                _showCreatePostDialog();
+              onTap: () async {
+                final newPost = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreatePostScreen(),
+                  ),
+                );
+
+                if (newPost != null && newPost.isNotEmpty) {
+                  setState(() {
+                    _posts.insert(0, newPost);
+                  });
+                }
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -96,12 +119,6 @@ class _FeedScreenState extends State<FeedScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          IconButton(
-            icon: const Icon(Icons.image),
-            onPressed: () {},
-            color: AppColors.blue,
-          ),
         ],
       ),
     );
@@ -110,10 +127,55 @@ class _FeedScreenState extends State<FeedScreen> {
   Widget _buildPostsList() {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: 10,
+      itemCount: _posts.length + 10,
       itemBuilder: (context, index) {
-        return _buildPostCard(index);
+        if (index < _posts.length) {
+          return _buildCustomPostCard(_posts[index]);
+        } else {
+          return _buildPostCard(index - _posts.length);
+        }
       },
+    );
+  }
+
+  Widget _buildCustomPostCard(String content) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: const [
+                  CircleAvatar(
+                    backgroundColor: AppColors.blue,
+                    child: Icon(Icons.person, color: AppColors.white),
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    "Você",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                content,
+                style: const TextStyle(fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -154,13 +216,13 @@ class _FeedScreenState extends State<FeedScreen> {
                             fontSize: 16,
                           ),
                         ),
-                                                 Text(
-                           '@usuario${index + 1} • ${_getRandomTime(index)}',
-                           style: const TextStyle(
-                             color: Colors.grey,
-                             fontSize: 14,
-                           ),
-                         ),
+                        Text(
+                          '@usuario${index + 1} • ${_getRandomTime(index)}',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -171,18 +233,18 @@ class _FeedScreenState extends State<FeedScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-                             Text(
-                 _getRandomPostContent(index),
-                 style: const TextStyle(fontSize: 16),
-               ),
+              Text(
+                _getRandomPostContent(index),
+                style: const TextStyle(fontSize: 16),
+              ),
               if (index % 3 == 0) ...[
                 const SizedBox(height: 12),
                 Container(
                   height: 200,
-                                     decoration: BoxDecoration(
-                     color: AppColors.lightBlue.withValues(alpha: 0.3),
-                     borderRadius: BorderRadius.circular(8),
-                   ),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightBlue.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   child: const Center(
                     child: Icon(
                       Icons.image,
@@ -258,40 +320,6 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  void _showCreatePostDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Criar Post'),
-        content: TextField(
-          controller: _postController,
-          maxLines: 4,
-          decoration: const InputDecoration(
-            hintText: 'O que você está pensando?',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _postController.clear();
-            },
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Implementar criação do post
-              Navigator.pop(context);
-              _postController.clear();
-            },
-            child: const Text('Publicar'),
-          ),
-        ],
-      ),
-    );
-  }
-
   String _getRandomTime(int index) {
     final times = ['2h', '5h', '1d', '3d', '1w'];
     return times[index % times.length];
@@ -311,11 +339,5 @@ class _FeedScreenState extends State<FeedScreen> {
       'Networking é fundamental na área de tecnologia',
     ];
     return contents[index % contents.length];
-  }
-
-  @override
-  void dispose() {
-    _postController.dispose();
-    super.dispose();
   }
 }
