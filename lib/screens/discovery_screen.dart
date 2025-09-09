@@ -25,6 +25,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: AppColors.blue,
         foregroundColor: AppColors.white,
         title: const Text('Descobrir'),

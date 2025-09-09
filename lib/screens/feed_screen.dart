@@ -138,154 +138,215 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  Widget _buildCustomPostCard(String content) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: const [
-                  CircleAvatar(
-                    backgroundColor: AppColors.blue,
-                    child: Icon(Icons.person, color: AppColors.white),
-                  ),
-                  SizedBox(width: 12),
-                  Text(
+Widget _buildCustomPostCard(String content) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    child: Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const CircleAvatar(
+                  backgroundColor: AppColors.blue,
+                  child: Icon(Icons.person, color: AppColors.white),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
                     "Você",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                content,
-                style: const TextStyle(fontSize: 16),
-              ),
-            ],
-          ),
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_horiz),
+                  onSelected: (value) {
+                    if (value == 'excluir') {
+                      // Remove o post da lista
+                      setState(() {
+                        _posts.remove(content);
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Post excluído")),
+                      );
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'excluir',
+                      child: Text("Excluir post"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              content,
+              style: const TextStyle(fontSize: 16),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _buildPostCard(int index) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: AppColors.blue,
-                    child: Text(
-                      'U${index + 1}',
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Usuário ${index + 1}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          '@usuario${index + 1} • ${_getRandomTime(index)}',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.more_horiz),
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                _getRandomPostContent(index),
-                style: const TextStyle(fontSize: 16),
-              ),
-              if (index % 3 == 0) ...[
-                const SizedBox(height: 12),
-                Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    color: AppColors.lightBlue.withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.image,
-                      size: 48,
-                      color: AppColors.blue,
+
+Widget _buildPostCard(int index) {
+  bool isMyPost = index == 0;
+
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    child: Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: AppColors.blue,
+                  child: Text(
+                    'U${index + 1}',
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Usuário ${index + 1}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        '@usuario${index + 1} • ${_getRandomTime(index)}',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.more_horiz),
+                  onSelected: (value) {
+                    if (value == 'excluir') {
+                      // Excluir post
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Post excluído")),
+                      );
+                    } else if (value == 'nao_interessa') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Esse post não será mostrado com frequência")),
+                      );
+                    } else if (value == 'ocultar') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Você não verá mais posts assim")),
+                      );
+                    }
+                  },
+                  itemBuilder: (context) {
+                    if (isMyPost) {
+                      return [
+                        const PopupMenuItem(
+                          value: 'excluir',
+                          child: Text("Excluir post"),
+                        ),
+                      ];
+                    } else {
+                      return [
+                        const PopupMenuItem(
+                          value: 'nao_interessa',
+                          child: Text("Esse post não me interessa"),
+                        ),
+                        const PopupMenuItem(
+                          value: 'ocultar',
+                          child: Text("Não quero mais ver posts assim"),
+                        ),
+                      ];
+                    }
+                  },
+                ),
               ],
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildActionButton(
-                    icon: Icons.chat_bubble_outline,
-                    label: '${(index + 1) * 3}',
-                    onPressed: () {},
+            ),
+            const SizedBox(height: 12),
+            Text(
+              _getRandomPostContent(index),
+              style: const TextStyle(fontSize: 16),
+            ),
+            if (index % 3 == 0) ...[
+              const SizedBox(height: 12),
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  color: AppColors.lightBlue.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Center(
+                  child: Icon(
+                    Icons.image,
+                    size: 48,
+                    color: AppColors.blue,
                   ),
-                  _buildActionButton(
-                    icon: Icons.repeat,
-                    label: '${(index + 1) * 2}',
-                    onPressed: () {},
-                  ),
-                  _buildActionButton(
-                    icon: Icons.favorite_border,
-                    label: '${(index + 1) * 5}',
-                    onPressed: () {},
-                  ),
-                  _buildActionButton(
-                    icon: Icons.share,
-                    label: '',
-                    onPressed: () {},
-                  ),
-                ],
+                ),
               ),
             ],
-          ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildActionButton(
+                  icon: Icons.chat_bubble_outline,
+                  label: '${(index + 1) * 3}',
+                  onPressed: () {},
+                ),
+                _buildActionButton(
+                  icon: Icons.repeat,
+                  label: '${(index + 1) * 2}',
+                  onPressed: () {},
+                ),
+                _buildActionButton(
+                  icon: Icons.favorite_border,
+                  label: '${(index + 1) * 5}',
+                  onPressed: () {},
+                ),
+                _buildActionButton(
+                  icon: Icons.share,
+                  label: '',
+                  onPressed: () {},
+                ),
+              ],
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildActionButton({
     required IconData icon,
