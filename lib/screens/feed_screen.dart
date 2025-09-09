@@ -16,7 +16,7 @@ class _FeedScreenState extends State<FeedScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.blue,
+        backgroundColor: AppColors.black,
         foregroundColor: AppColors.white,
         title: const Text('Feed'),
         automaticallyImplyLeading: false,
