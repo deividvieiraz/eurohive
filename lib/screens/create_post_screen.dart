@@ -145,6 +145,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: AppColors.blue,
         foregroundColor: AppColors.white,
         title: const Text("Nova publicação"),
