@@ -30,33 +30,41 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 60),
-              const Text(
-                AppTexts.loginYourAccount,
-                style: TextStyle(fontSize: 32, color: AppColors.white),
-                textAlign: TextAlign.center,
+              Padding(
+                padding: const EdgeInsets.only(top: 100, bottom: 20),
+                child: const Text(
+                  AppTexts.loginYourAccount,
+                  style: TextStyle(
+                    fontSize: 32,
+                    color: AppColors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              const SizedBox(height: 32),
-              const Text(
-                AppTexts.provideYourData,
-                style: TextStyle(color: AppColors.white),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
 
               Expanded(
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: Container(
                       padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.black87,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
+                      color: Colors.black87,
                       child: ListView(
                         children: [
+                          const Text(
+                            AppTexts.provideYourData,
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontSize: 16,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 20),
                           TextField(
                             decoration: const InputDecoration(
                               hintText: AppTexts.provideEmail,
@@ -134,7 +142,10 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 48,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.pushReplacementNamed(context, '/main');
+                                Navigator.pushReplacementNamed(
+                                  context,
+                                  '/main',
+                                );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.blue,
@@ -194,11 +205,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: const Text.rich(
                                 TextSpan(
                                   text: AppTexts.dontHaveAccount,
-                                  style: TextStyle(color: AppColors.white),
+                                  style: TextStyle(color: AppColors.white, fontSize: 16),
                                   children: [
                                     TextSpan(
                                       text: AppTexts.register,
-                                      style: TextStyle(color: AppColors.white),
+                                      style: TextStyle(color: AppColors.blue, fontSize: 16),
                                     ),
                                   ],
                                 ),

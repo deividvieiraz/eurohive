@@ -13,6 +13,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  late PageController _pageController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final List<Widget> _screens = [
@@ -22,18 +23,57 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       drawer: _buildDrawer(),
       body: Stack(
         children: [
-          IndexedStack(index: _currentIndex, children: _screens),
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemCount: _screens.length,
+            itemBuilder: (context, index) {
+              return AnimatedBuilder(
+                animation: _pageController,
+                builder: (context, child) {
+                  double value = 1.0;
+                  if (_pageController.position.haveDimensions) {
+                    value = _pageController.page! - index;
+                    value = (1 - (value.abs() * 0.3)).clamp(0.0, 1.0);
+                  }
+                  return Transform.scale(
+                    scale: value,
+                    child: Opacity(
+                      opacity: value,
+                      child: _screens[index],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
 
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
-              padding: const EdgeInsets.only(left: 100, right: 100, bottom: 25),
+              padding: const EdgeInsets.only(left: 90, right: 90, bottom: 25),
               child: Container(
                 height: 70,
                 decoration: BoxDecoration(
@@ -50,13 +90,18 @@ class _MainScreenState extends State<MainScreen> {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(30),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildNavItem(0, Icons.home_rounded),
-                      _buildNavItem(1, Icons.people_rounded),
-                      _buildNavItem(2, Icons.explore_rounded),
-                    ],
+                  child: AnimatedBuilder(
+                    animation: _pageController,
+                    builder: (context, child) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildNavItem(0, Icons.home_rounded),
+                          _buildNavItem(1, Icons.people_rounded),
+                          _buildNavItem(2, Icons.explore_rounded),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
@@ -102,9 +147,11 @@ class _MainScreenState extends State<MainScreen> {
             leading: const Icon(Icons.home),
             title: const Text('Início'),
             onTap: () {
-              setState(() {
-                _currentIndex = 0;
-              });
+              _pageController.animateToPage(
+                0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
               Navigator.pop(context);
             },
           ),
@@ -112,9 +159,11 @@ class _MainScreenState extends State<MainScreen> {
             leading: const Icon(Icons.article),
             title: const Text('Feed'),
             onTap: () {
-              setState(() {
-                _currentIndex = 1;
-              });
+              _pageController.animateToPage(
+                1,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
               Navigator.pop(context);
             },
           ),
@@ -122,9 +171,11 @@ class _MainScreenState extends State<MainScreen> {
             leading: const Icon(Icons.explore),
             title: const Text('Descobrir'),
             onTap: () {
-              setState(() {
-                _currentIndex = 2;
-              });
+              _pageController.animateToPage(
+                2,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
               Navigator.pop(context);
             },
           ),
@@ -157,36 +208,43 @@ class _MainScreenState extends State<MainScreen> {
     }
 
   Widget _buildNavItem(int index, IconData icon) {
-    final isSelected = _currentIndex == index;
-
     return Expanded(
       child: InkWell(
         onTap: () {
-          setState(() {
-            _currentIndex = index;
-          });
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
         },
         borderRadius: BorderRadius.circular(30),
         child: SizedBox(
           height: 70,
           child: Center(
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isSelected
-                    ? AppColors.blue.withValues(alpha: 0.2)
-                    : Colors.transparent,
-              ),
-              child: Icon(
-                icon,
-                color: isSelected ? AppColors.blue : AppColors.black,
-                size: 28,
-              ),
+            child: AnimatedBuilder(
+              animation: _pageController,
+              builder: (context, child) {
+
+                final isSelected = _currentIndex == index;
+
+                return Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected ? AppColors.blue.withValues(alpha: 0.2) : Colors.transparent,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: isSelected ? AppColors.blue : AppColors.black,
+                      size: 28,
+                    ),
+                  );
+              },
             ),
           ),
         ),
       ),
     );
   }
+
 }
