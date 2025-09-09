@@ -228,7 +228,7 @@ class _MainScreenState extends State<MainScreen> {
                 final isSelected = _currentIndex == index;
 
                 return Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(15),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: isSelected ? AppColors.blue.withValues(alpha: 0.2) : Colors.transparent,

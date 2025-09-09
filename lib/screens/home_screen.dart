@@ -78,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _buildNewsSection(),
           const SizedBox(height: 24),
           _buildRecentProjects(),
+          const SizedBox(height: 100),
         ],
       ),
     );

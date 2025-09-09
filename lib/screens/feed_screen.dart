@@ -147,7 +147,7 @@ Widget _buildCustomPostCard(String content) {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      color: AppColors.white,
+      color: AppColors.lightGray,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -213,7 +213,7 @@ Widget _buildPostCard(int index) {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      color: AppColors.white,
+      color: AppColors.lightGray,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

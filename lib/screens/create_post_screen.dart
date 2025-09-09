@@ -144,9 +144,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: AppColors.blue,
+        backgroundColor: AppColors.black,
         foregroundColor: AppColors.white,
         title: const Text("Nova publicação"),
         leading: IconButton(
@@ -162,9 +163,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor:
-                    _isTextEmpty ? Colors.grey.shade300 : AppColors.white,
+                    _isTextEmpty ? AppColors.darkGray : AppColors.white,
                 foregroundColor:
-                    _isTextEmpty ? Colors.grey : AppColors.blue,
+                    _isTextEmpty ? AppColors.white : AppColors.black,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -204,7 +205,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: Container(
+      bottomSheet: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: Colors.white,

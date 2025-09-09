@@ -1,18 +1,17 @@
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/models/project_application_model.dart' as model;
+import 'package:eurohive/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class ProjectApplicationScreen extends StatefulWidget {
   final String projectId;
 
-  const ProjectApplicationScreen({
-    super.key,
-    required this.projectId,
-  });
+  const ProjectApplicationScreen({super.key, required this.projectId});
 
   @override
-  State<ProjectApplicationScreen> createState() => _ProjectApplicationScreenState();
+  State<ProjectApplicationScreen> createState() =>
+      _ProjectApplicationScreenState();
 }
 
 class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
@@ -27,7 +26,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     super.initState();
     _project = model.ProjectApplicationData.getProjectById(widget.projectId)!;
     _pageController = PageController();
-    
+
     // Initialize form keys for each step
     for (int i = 0; i < _project.steps.length; i++) {
       _formKeys['step_$i'] = GlobalKey<FormState>();
@@ -46,7 +45,10 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.transparent,
-        title: Text(_project.projectName, style: TextStyle(color: AppColors.black)),
+        title: Text(
+          _project.projectName,
+          style: TextStyle(color: AppColors.black),
+        ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: AppColors.black),
           onPressed: () => _showExitDialog(),
@@ -92,10 +94,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
               ),
               Text(
                 '${((_currentStep + 1) / _project.steps.length * 100).round()}%',
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
             ],
           ),
@@ -103,7 +102,9 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           LinearProgressIndicator(
             value: (_currentStep + 1) / _project.steps.length,
             backgroundColor: Colors.grey[300],
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.blue),
+            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.darkOrange),
+            minHeight: 20,
+            borderRadius: BorderRadius.all(Radius.circular(30)),
           ),
         ],
       ),
@@ -112,7 +113,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
 
   Widget _buildStepContent(int stepIndex) {
     final step = _project.steps[stepIndex];
-    
+
     return Form(
       key: _formKeys['step_$stepIndex'],
       child: SingleChildScrollView(
@@ -122,18 +123,12 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           children: [
             Text(
               step.title,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               step.description,
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const SizedBox(height: 24),
             if (step.fields.isEmpty)
@@ -154,10 +149,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
         children: [
           Text(
             '${field.label}${field.isRequired ? ' *' : ''}',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           const SizedBox(height: 8),
           _buildFieldInput(field),
@@ -174,9 +166,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           onChanged: (value) => _formData[field.id] = value,
           decoration: InputDecoration(
             hintText: field.placeholder,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.blue),
@@ -185,7 +175,8 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           validator: field.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return field.validationMessage ?? 'Este campo é obrigatório';
+                    return field.validationMessage ??
+                        'Este campo é obrigatório';
                   }
                   return null;
                 }
@@ -200,9 +191,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           maxLength: field.maxLength,
           decoration: InputDecoration(
             hintText: field.placeholder,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.blue),
@@ -211,7 +200,8 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           validator: field.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return field.validationMessage ?? 'Este campo é obrigatório';
+                    return field.validationMessage ??
+                        'Este campo é obrigatório';
                   }
                   return null;
                 }
@@ -224,24 +214,20 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           onChanged: (value) => _formData[field.id] = value,
           decoration: InputDecoration(
             hintText: field.placeholder,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.blue),
             ),
           ),
           items: field.options?.map((option) {
-            return DropdownMenuItem(
-              value: option,
-              child: Text(option),
-            );
+            return DropdownMenuItem(value: option, child: Text(option));
           }).toList(),
           validator: field.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return field.validationMessage ?? 'Este campo é obrigatório';
+                    return field.validationMessage ??
+                        'Este campo é obrigatório';
                   }
                   return null;
                 }
@@ -256,9 +242,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           decoration: InputDecoration(
             hintText: field.placeholder,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.blue),
@@ -267,7 +251,8 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           validator: field.isRequired
               ? (value) {
                   if (value == null || value.isEmpty) {
-                    return field.validationMessage ?? 'Este campo é obrigatório';
+                    return field.validationMessage ??
+                        'Este campo é obrigatório';
                   }
                   return null;
                 }
@@ -288,20 +273,13 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.attach_file,
-                    size: 32,
-                    color: Colors.grey[600],
-                  ),
+                  Icon(Icons.attach_file, size: 32, color: Colors.grey[600]),
                   const SizedBox(height: 8),
                   Text(
                     _formData[field.id] != null
                         ? 'Arquivo selecionado'
                         : 'Toque para anexar arquivo',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
                 ],
               ),
@@ -323,10 +301,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           children: [
             const Text(
               'Revise suas informações:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             ..._formData.entries.map((entry) {
@@ -385,11 +360,13 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
                 foregroundColor: AppColors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(15),
                 ),
               ),
               child: Text(
-                _currentStep == _project.steps.length - 1 ? 'Enviar' : 'Próximo',
+                _currentStep == _project.steps.length - 1
+                    ? 'Enviar'
+                    : 'Próximo',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -442,7 +419,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     if (_validateCurrentStep()) {
       // Simular envio da aplicação
       final protocolNumber = 'PROT-${DateTime.now().millisecondsSinceEpoch}';
-      
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -495,7 +472,7 @@ class ApplicationSuccessScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.blue,
+        backgroundColor: AppColors.black,
         foregroundColor: AppColors.white,
         title: const Text('Aplicação Enviada'),
         automaticallyImplyLeading: false,
@@ -522,26 +499,20 @@ class ApplicationSuccessScreen extends StatelessWidget {
               const SizedBox(height: 32),
               const Text(
                 'Aplicação Enviada com Sucesso!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
               Text(
-                'Sua aplicação para o projeto "$projectName" foi enviada com sucesso.',
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                'Sua aplicação para o projeto $projectName foi enviada com sucesso.',
+                style: const TextStyle(fontSize: 16, color: Colors.grey),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.blue.withValues(alpha: 0.1),
+                  color: AppColors.darkOrange.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: AppColors.blue),
                 ),
@@ -561,7 +532,7 @@ class ApplicationSuccessScreen extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.blue,
+                        color: AppColors.black,
                       ),
                     ),
                   ],
@@ -572,22 +543,19 @@ class ApplicationSuccessScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.popUntil(context, (route) => route.isFirst);
+                    Navigator.pushReplacementNamed(context, AppRoutes.main);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.blue,
+                    backgroundColor: AppColors.black,
                     foregroundColor: AppColors.white,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(30),
                     ),
                   ),
                   child: const Text(
                     'Voltar ao Início',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

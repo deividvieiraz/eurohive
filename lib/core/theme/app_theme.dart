@@ -7,6 +7,18 @@ class AppTheme {
     return ThemeData(
       primaryColor: AppColors.lightBlue,
       scaffoldBackgroundColor: AppColors.white,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: AppColors.lightBlue,
+        brightness: Brightness.light,
+        primary: AppColors.lightBlue,
+        secondary: AppColors.lightBlue,
+        background: AppColors.white,
+        surface: AppColors.white,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onBackground: Colors.black,
+        onSurface: Colors.black,
+      ),
       appBarTheme: AppBarTheme(
         backgroundColor: AppColors.lightBlue,
         foregroundColor: AppColors.white,
@@ -21,6 +33,18 @@ class AppTheme {
             borderRadius: BorderRadius.circular(12),
           ),
         ),
+      ),
+      drawerTheme: const DrawerThemeData(
+        backgroundColor: Colors.white,
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: Colors.white,
+      ),
+      popupMenuTheme: const PopupMenuThemeData(
+        color: Colors.white,
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: Colors.white,
       ),
     );
   }
