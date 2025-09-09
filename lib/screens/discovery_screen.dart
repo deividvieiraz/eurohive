@@ -29,7 +29,6 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         backgroundColor: AppColors.blue,
         foregroundColor: AppColors.white,
         title: const Text('Descobrir'),
-        automaticallyImplyLeading: false,
         actions: [
           IconButton(icon: const Icon(Icons.search), onPressed: () {}),
           IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
