@@ -33,11 +33,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         automaticallyImplyLeading: false,
         backgroundColor: AppColors.black,
         foregroundColor: AppColors.white,
-        title: const Text('Descobrir'),
-        actions: [
-          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
-          IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
-        ],
+        title: const Text('Descobrir')
       ),
       body: Column(
         children: [
@@ -551,10 +547,27 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                         Navigator.pop(context);
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => ProjectApplicationScreen(
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) => ProjectApplicationScreen(
                               projectId: project['id'],
                             ),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(0.0, 1.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOut;
+                              
+                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                              var offsetAnimation = animation.drive(tween);
+                              
+                              return SlideTransition(
+                                position: offsetAnimation,
+                                child: FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            transitionDuration: const Duration(milliseconds: 400),
                           ),
                         );
                       },

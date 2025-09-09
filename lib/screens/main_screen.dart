@@ -1,7 +1,9 @@
 import 'package:eurohive/core/constants/app_colors.dart';
+import 'package:eurohive/routes/app_routes.dart';
 import 'package:eurohive/screens/discovery_screen.dart';
 import 'package:eurohive/screens/feed_screen.dart';
 import 'package:eurohive/screens/home_screen.dart';
+import 'package:eurohive/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {
@@ -119,28 +121,56 @@ class _MainScreenState extends State<MainScreen> {
         children: [
           DrawerHeader(
             decoration: const BoxDecoration(color: AppColors.blue),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: AppColors.white,
-                  child: Icon(Icons.person, size: 35, color: AppColors.blue),
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Usuário EuroHive',
-                  style: TextStyle(
-                    color: AppColors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            child: InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => const ProfileScreen(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+                      
+                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      var offsetAnimation = animation.drive(tween);
+                      
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    transitionDuration: const Duration(milliseconds: 400),
                   ),
-                ),
-                const Text(
-                  'usuario@eurohive.com',
-                  style: TextStyle(color: AppColors.white, fontSize: 14),
-                ),
-              ],
+                );
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: AppColors.white,
+                    child: Icon(Icons.person, size: 35, color: AppColors.blue),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'João Silva',
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Text(
+                    'joao.silva@eurohive.com',
+                    style: TextStyle(color: AppColors.white, fontSize: 14),
+                  ),
+                ],
+              ),
             ),
           ),
           ListTile(
@@ -180,6 +210,36 @@ class _MainScreenState extends State<MainScreen> {
             },
           ),
           const Divider(),
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('Meu Perfil'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const ProfileScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+                    
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+                    
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      ),
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 400),
+                ),
+              );
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Configurações'),

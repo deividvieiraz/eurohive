@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/core/constants/app_texts.dart';
+import 'package:eurohive/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -142,9 +143,28 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 48,
                             child: ElevatedButton(
                               onPressed: () {
-                                Navigator.pushReplacementNamed(
+                                Navigator.pushReplacement(
                                   context,
-                                  '/main',
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
+                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                      const begin = Offset(1.0, 0.0);
+                                      const end = Offset.zero;
+                                      const curve = Curves.easeInOut;
+                                      
+                                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                                      var offsetAnimation = animation.drive(tween);
+                                      
+                                      return SlideTransition(
+                                        position: offsetAnimation,
+                                        child: FadeTransition(
+                                          opacity: animation,
+                                          child: child,
+                                        ),
+                                      );
+                                    },
+                                    transitionDuration: const Duration(milliseconds: 500),
+                                  ),
                                 );
                               },
                               style: ElevatedButton.styleFrom(

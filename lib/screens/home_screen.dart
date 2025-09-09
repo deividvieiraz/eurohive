@@ -1,3 +1,4 @@
+import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -14,9 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       children: [
         _buildAppBar(),
-        Expanded(
-          child: _buildBody(),
-        ),
+        Expanded(child: _buildBody()),
       ],
     );
   }
@@ -32,33 +31,20 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       child: SafeArea(
-        child: Row(
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            IconButton(
-              icon: const Icon(Icons.menu, color: AppColors.white),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            ),
-            const Expanded(
-              child: Text(
-                'EuroHive',
-                style: TextStyle(
-                  color: AppColors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.menu, color: AppColors.white, size: 30,),
+                  onPressed: () {
+                    Scaffold.of(context).openDrawer();
+                  },
                 ),
-                textAlign: TextAlign.center,
-              ),
+              ],
             ),
-            IconButton(
-              icon: const Icon(Icons.notifications_outlined, color: AppColors.white),
-              onPressed: () {},
-            ),
-            IconButton(
-              icon: const Icon(Icons.person_outline, color: AppColors.white),
-              onPressed: () {},
-            ),
+            Image.asset(AppAssets.eurohiveName, height: 30),
           ],
         ),
       ),

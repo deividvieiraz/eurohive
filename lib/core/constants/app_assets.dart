@@ -2,6 +2,7 @@ class AppAssets {
   // Images
   static const loginBackground = 'assets/images/login_background.jpeg';
   static const googleLogo = 'assets/images/google_logo.png';
+  static const eurohiveName= 'assets/images/eurohive_name.png';
 
   // Icons
   static const homeIcon = 'assets/icons/home_ic.svg';
