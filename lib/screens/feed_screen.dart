@@ -19,6 +19,7 @@ class _FeedScreenState extends State<FeedScreen> {
         backgroundColor: AppColors.blue,
         foregroundColor: AppColors.white,
         title: const Text('Feed'),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -146,6 +147,7 @@ class _FeedScreenState extends State<FeedScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
+        color: AppColors.white,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -184,6 +186,7 @@ class _FeedScreenState extends State<FeedScreen> {
       margin: const EdgeInsets.only(bottom: 16),
       child: Card(
         elevation: 2,
+        color: AppColors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),

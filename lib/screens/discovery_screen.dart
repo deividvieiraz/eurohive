@@ -28,23 +28,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         backgroundColor: AppColors.blue,
         foregroundColor: AppColors.white,
         title: const Text('Descobrir'),
+        automaticallyImplyLeading: false,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.filter_list), onPressed: () {}),
         ],
       ),
       body: Column(
         children: [
           _buildCategoryFilter(),
-          Expanded(
-            child: _buildProjectsGrid(),
-          ),
+          Expanded(child: _buildProjectsGrid()),
         ],
       ),
     );
@@ -61,7 +54,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         itemBuilder: (context, index) {
           final category = _categories[index];
           final isSelected = category == _selectedCategory;
-          
+
           return Container(
             margin: const EdgeInsets.only(right: 12),
             child: FilterChip(
@@ -103,12 +96,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
   Widget _buildProjectCard(int index) {
     final projectData = _getProjectData(index);
-    
+
     return Card(
       elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: AppColors.white,
       child: InkWell(
         onTap: () {
           _showProjectDetails(projectData);
@@ -118,16 +110,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: 120,
+              height: 100,
               decoration: BoxDecoration(
-                                 gradient: LinearGradient(
-                   colors: [
-                     projectData['color'],
-                     projectData['color'].withValues(alpha: 0.7),
-                   ],
-                   begin: Alignment.topLeft,
-                   end: Alignment.bottomRight,
-                 ),
+                gradient: LinearGradient(
+                  colors: [
+                    projectData['color'],
+                    projectData['color'].withValues(alpha: 0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
@@ -135,22 +127,22 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
               child: Stack(
                 children: [
                   Positioned(
-                    top: 12,
-                    right: 12,
+                    top: 8,
+                    right: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
+                        horizontal: 6,
+                        vertical: 3,
                       ),
-                                             decoration: BoxDecoration(
-                         color: Colors.white.withValues(alpha: 0.2),
-                         borderRadius: BorderRadius.circular(12),
-                       ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
                       child: Text(
                         projectData['category'],
                         style: const TextStyle(
                           color: Colors.white,
-                          fontSize: 12,
+                          fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -159,70 +151,64 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   Center(
                     child: Icon(
                       projectData['icon'],
-                      size: 48,
+                      size: 40,
                       color: Colors.white,
                     ),
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    projectData['title'],
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    projectData['description'],
-                    style: const TextStyle(
-                      color: Colors.grey,
-                      fontSize: 12,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.star,
-                        size: 16,
-                        color: Colors.amber[600],
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      projectData['title'],
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        projectData['rating'],
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 3),
+                    Expanded(
+                      child: Text(
+                        projectData['description'],
+                        style: const TextStyle(color: Colors.grey, fontSize: 11),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(Icons.star, size: 14, color: Colors.amber[600]),
+                        const SizedBox(width: 3),
+                        Text(
+                          projectData['rating'],
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const Spacer(),
-                      Icon(
-                        Icons.favorite_border,
-                        size: 16,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        projectData['likes'],
-                        style: TextStyle(
-                          fontSize: 12,
+                        const Spacer(),
+                        Icon(
+                          Icons.favorite_border,
+                          size: 14,
                           color: Colors.grey[600],
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 3),
+                        Text(
+                          projectData['likes'],
+                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -342,7 +328,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         'likes': '334',
       },
     ];
-    
+
     return projects[index % projects.length];
   }
 
@@ -355,23 +341,21 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         height: MediaQuery.of(context).size.height * 0.8,
         decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Column(
           children: [
             Container(
               height: 200,
               decoration: BoxDecoration(
-                                 gradient: LinearGradient(
-                   colors: [
-                     project['color'],
-                     project['color'].withValues(alpha: 0.7),
-                   ],
-                   begin: Alignment.topLeft,
-                   end: Alignment.bottomRight,
-                 ),
+                gradient: LinearGradient(
+                  colors: [
+                    project['color'],
+                    project['color'].withValues(alpha: 0.7),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(20),
                 ),
@@ -382,19 +366,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                     top: 20,
                     right: 20,
                     child: IconButton(
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.white,
-                      ),
+                      icon: const Icon(Icons.close, color: Colors.white),
                       onPressed: () => Navigator.pop(context),
                     ),
                   ),
                   Center(
-                    child: Icon(
-                      project['icon'],
-                      size: 80,
-                      color: Colors.white,
-                    ),
+                    child: Icon(project['icon'], size: 80, color: Colors.white),
                   ),
                 ],
               ),
@@ -414,10 +391,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   const SizedBox(height: 8),
                   Text(
                     project['description'],
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                    style: const TextStyle(fontSize: 16, color: Colors.grey),
                   ),
                   const SizedBox(height: 16),
                   Row(
@@ -427,10 +401,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                           horizontal: 12,
                           vertical: 6,
                         ),
-                                                 decoration: BoxDecoration(
-                           color: project['color'].withValues(alpha: 0.1),
-                           borderRadius: BorderRadius.circular(20),
-                         ),
+                        decoration: BoxDecoration(
+                          color: project['color'].withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         child: Text(
                           project['category'],
                           style: TextStyle(
@@ -442,16 +416,11 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                       const Spacer(),
                       Row(
                         children: [
-                          Icon(
-                            Icons.star,
-                            color: Colors.amber[600],
-                          ),
+                          Icon(Icons.star, color: Colors.amber[600]),
                           const SizedBox(width: 4),
                           Text(
                             project['rating'],
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],
                       ),
@@ -460,18 +429,12 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   const SizedBox(height: 24),
                   const Text(
                     'Sobre o Projeto',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   const Text(
                     'Este é um projeto inovador que combina as melhores práticas de desenvolvimento com tecnologias modernas. Ideal para desenvolvedores que querem aprender e aplicar novas técnicas.',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
