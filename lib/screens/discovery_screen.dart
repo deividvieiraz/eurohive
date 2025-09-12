@@ -1,3 +1,4 @@
+import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/screens/project_application_screen.dart';
 import 'package:flutter/material.dart';
@@ -29,14 +30,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: AppColors.black,
-        foregroundColor: AppColors.white,
-        title: const Text('Descobrir')
-      ),
       body: Column(
         children: [
+          _buildAppBar(),
           _buildCategoryFilter(),
           Expanded(child: _buildProjectsGrid()),
         ],
@@ -75,6 +71,29 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: const BoxDecoration(color: AppColors.black),
+      height: 200,
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Descubra onde sua\nideia pode fazer\na diferença!",
+                style: TextStyle(color: AppColors.white, fontSize: 24),
+              ),
+              Image.asset(AppAssets.eurofarmaWorld, height: 75),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -178,7 +197,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                     Expanded(
                       child: Text(
                         projectData['description'],
-                        style: const TextStyle(color: Colors.grey, fontSize: 11),
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 11,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -204,7 +226,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                         const SizedBox(width: 3),
                         Text(
                           projectData['likes'],
-                          style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey[600],
+                          ),
                         ),
                       ],
                     ),
@@ -223,7 +248,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       {
         'id': 'vem_crescer',
         'title': 'Vem Crescer',
-        'description': 'Programa de capacitação e desenvolvimento profissional interno',
+        'description':
+            'Programa de capacitação e desenvolvimento profissional interno',
         'category': 'Desenvolvimento',
         'icon': Icons.trending_up,
         'color': AppColors.blue,
@@ -243,7 +269,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       {
         'id': 'formacao_lideres',
         'title': 'Formação de Líderes',
-        'description': 'Programa de desenvolvimento de habilidades de liderança',
+        'description':
+            'Programa de desenvolvimento de habilidades de liderança',
         'category': 'Liderança',
         'icon': Icons.people,
         'color': Colors.purple,
@@ -548,26 +575,39 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                         Navigator.push(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => ProjectApplicationScreen(
-                              projectId: project['id'],
+                            pageBuilder:
+                                (context, animation, secondaryAnimation) =>
+                                    ProjectApplicationScreen(
+                                      projectId: project['id'],
+                                    ),
+                            transitionsBuilder:
+                                (
+                                  context,
+                                  animation,
+                                  secondaryAnimation,
+                                  child,
+                                ) {
+                                  const begin = Offset(0.0, 1.0);
+                                  const end = Offset.zero;
+                                  const curve = Curves.easeInOut;
+
+                                  var tween = Tween(
+                                    begin: begin,
+                                    end: end,
+                                  ).chain(CurveTween(curve: curve));
+                                  var offsetAnimation = animation.drive(tween);
+
+                                  return SlideTransition(
+                                    position: offsetAnimation,
+                                    child: FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    ),
+                                  );
+                                },
+                            transitionDuration: const Duration(
+                              milliseconds: 400,
                             ),
-                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                              const begin = Offset(0.0, 1.0);
-                              const end = Offset.zero;
-                              const curve = Curves.easeInOut;
-                              
-                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                              var offsetAnimation = animation.drive(tween);
-                              
-                              return SlideTransition(
-                                position: offsetAnimation,
-                                child: FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                ),
-                              );
-                            },
-                            transitionDuration: const Duration(milliseconds: 400),
                           ),
                         );
                       },

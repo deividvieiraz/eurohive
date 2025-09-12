@@ -1,5 +1,4 @@
 import 'package:eurohive/core/constants/app_colors.dart';
-import 'package:eurohive/routes/app_routes.dart';
 import 'package:eurohive/screens/discovery_screen.dart';
 import 'package:eurohive/screens/feed_screen.dart';
 import 'package:eurohive/screens/home_screen.dart';

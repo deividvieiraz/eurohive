@@ -12,126 +12,183 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        _buildAppBar(),
-        Expanded(child: _buildBody()),
+        _buildBody()
       ],
     );
   }
 
-  Widget _buildAppBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: const BoxDecoration(
-        color: AppColors.black,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
-      ),
-      child: SafeArea(
-        child: Stack(
-          alignment: Alignment.center,
+  Widget _buildBody() {
+    return SingleChildScrollView(
+      child: Container(
+        color: AppColors.lightGray,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.menu, color: AppColors.white, size: 30,),
-                  onPressed: () {
-                    Scaffold.of(context).openDrawer();
-                  },
-                ),
-              ],
-            ),
-            Image.asset(AppAssets.eurohiveName, height: 30),
+            _buildHeaderWithCard(),
+            const SizedBox(height: 100),
+            _buildQuickStats(),
+            const SizedBox(height: 24),
+            _buildNewsSection(),
+            const SizedBox(height: 24),
+            _buildRecentProjects(),
+            const SizedBox(height: 100),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBody() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildWelcomeSection(),
-          const SizedBox(height: 24),
-          _buildQuickStats(),
-          const SizedBox(height: 24),
-          _buildNewsSection(),
-          const SizedBox(height: 24),
-          _buildRecentProjects(),
-          const SizedBox(height: 100),
-        ],
+  Widget _buildWelcomeSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              spreadRadius: 2,
+              blurRadius: 8,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bem-vindo de volta!',
+              style: TextStyle(
+                color: AppColors.black,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Descubra novas ideias e conecte-se com a rede de inovção Eurofarma',
+              style: TextStyle(color: AppColors.black, fontSize: 16),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildWelcomeSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.blue, AppColors.lightBlue],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+  Widget _buildHeaderWithCard() {
+  return Stack(
+    clipBehavior: Clip.none,
+    children: [
+      Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: const BoxDecoration(
+          color: AppColors.black,
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(20),
+            bottomRight: Radius.circular(20),
+          ),
         ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Bem-vindo de volta!',
-            style: TextStyle(
-              color: AppColors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
+        height: 300,
+        child: SafeArea(
+          child: Column(
+            children: [
+              Stack(
+              alignment: Alignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.menu,
+                        color: AppColors.white,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                    )
+                  ],
+                ),
+                Image.asset(AppAssets.eurohiveName, height: 25),
+              ],
             ),
+              const SizedBox(height: 30),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 35,
+                      backgroundImage: AssetImage(AppAssets.joaoFoto),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: const [
+                    Text(
+                      "Olá, João!",
+                      style: TextStyle(color: AppColors.white, fontSize: 32),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 8),
-          Text(
-            'Descubra novas ideias e conecte-se com outros desenvolvedores',
-            style: TextStyle(color: AppColors.white, fontSize: 16),
-          ),
-        ],
+        ),
       ),
-    );
-  }
+
+      Positioned(
+        bottom: -60,
+        left: 0,
+        right: 0,
+        child: _buildWelcomeSection(),
+      ),
+    ],
+  );
+}
 
   Widget _buildQuickStats() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.article,
-            title: 'Posts',
-            value: '12',
-            color: AppColors.blue,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatCard(
+              icon: Icons.article,
+              title: 'Posts',
+              value: '12',
+              color: AppColors.blue,
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.favorite,
-            title: 'Curtidas',
-            value: '89',
-            color: AppColors.lightBlue,
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              icon: Icons.favorite,
+              title: 'Curtidas',
+              value: '89',
+              color: AppColors.lightBlue,
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildStatCard(
-            icon: Icons.people,
-            title: 'Seguidores',
-            value: '234',
-            color: AppColors.blue,
+          const SizedBox(width: 12),
+          Expanded(
+            child: _buildStatCard(
+              icon: Icons.people,
+              title: 'Seguidores',
+              value: '234',
+              color: AppColors.blue,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -174,129 +231,135 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNewsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Últimas Notícias',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 230,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: 5,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Últimas Notícias',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 230,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: 5,
+              itemBuilder: (context, index) {
+                return Container(
+                  width: 280,
+                  margin: const EdgeInsets.only(right: 16),
+                  child: Card(
+                    elevation: 4,
+                    color: AppColors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          height: 120,
+                          decoration: BoxDecoration(
+                            color: AppColors.lightBlue.withValues(alpha: 0.3),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(12),
+                            ),
+                          ),
+                          child: const Center(
+                            child: Icon(
+                              Icons.article,
+                              size: 48,
+                              color: AppColors.blue,
+                            ),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Notícia ${index + 1}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              const Text(
+                                'Descrição breve da notícia que pode ter várias linhas...',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 14,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentProjects() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Projetos Recentes',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: 3,
             itemBuilder: (context, index) {
               return Container(
-                width: 280,
-                margin: const EdgeInsets.only(right: 16),
+                margin: const EdgeInsets.only(bottom: 12),
                 child: Card(
-                  elevation: 4,
+                  elevation: 2,
                   color: AppColors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: AppColors.lightBlue.withValues(alpha: 0.3),
-                          borderRadius: const BorderRadius.vertical(
-                            top: Radius.circular(12),
-                          ),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.article,
-                            size: 48,
-                            color: AppColors.blue,
-                          ),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.blue,
+                      child: Text(
+                        'P${index + 1}',
+                        style: const TextStyle(
+                          color: AppColors.white,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Notícia ${index + 1}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Descrição breve da notícia que pode ter várias linhas...',
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
+                    title: Text('Projeto ${index + 1}'),
+                    subtitle: Text('Descrição do projeto ${index + 1}'),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () {
+                      // Navegar para detalhes do projeto
+                    },
                   ),
                 ),
               );
             },
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecentProjects() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Projetos Recentes',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: 3,
-          itemBuilder: (context, index) {
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Card(
-                elevation: 2,
-                color: AppColors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: AppColors.blue,
-                    child: Text(
-                      'P${index + 1}',
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  title: Text('Projeto ${index + 1}'),
-                  subtitle: Text('Descrição do projeto ${index + 1}'),
-                  trailing: const Icon(Icons.arrow_forward_ios),
-                  onTap: () {
-                    // Navegar para detalhes do projeto
-                  },
-                ),
-              ),
-            );
-          },
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

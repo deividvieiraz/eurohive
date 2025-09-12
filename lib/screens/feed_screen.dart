@@ -1,3 +1,4 @@
+import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'create_post_screen.dart';
@@ -15,23 +16,9 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.black,
-        foregroundColor: AppColors.white,
-        title: const Text('Feed'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.notifications_outlined,
-              color: AppColors.white,
-            ),
-            onPressed: () {},
-          ),
-        ],
-      ),
       body: Column(
         children: [
+          _buildAppBar(),
           _buildCreatePostSection(),
           Expanded(child: _buildPostsList()),
         ],
@@ -52,6 +39,90 @@ class _FeedScreenState extends State<FeedScreen> {
           }
         },
         child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 150,
+      decoration: const BoxDecoration(color: AppColors.black),
+      child: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.menu,
+                        color: AppColors.white,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.notifications_outlined,
+                        color: AppColors.white,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                    ),
+                  ],
+                ),
+                Image.asset(AppAssets.eurohiveName, height: 25),
+              ],
+            ),
+            Padding(
+              padding: EdgeInsetsGeometry.only(left: 24, right: 24, bottom: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'Recentes',
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'Trending',
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'Seguindo',
+                      style: TextStyle(
+                        color: AppColors.white,
+                        fontSize: 18,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
