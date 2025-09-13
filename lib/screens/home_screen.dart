@@ -1,5 +1,6 @@
 import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
+import 'package:eurohive/models/news.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -12,11 +13,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        _buildBody()
-      ],
-    );
+    return Stack(children: [_buildBody()]);
   }
 
   Widget _buildBody() {
@@ -80,81 +77,81 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHeaderWithCard() {
-  return Stack(
-    clipBehavior: Clip.none,
-    children: [
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: const BoxDecoration(
-          color: AppColors.black,
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(20),
-            bottomRight: Radius.circular(20),
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: const BoxDecoration(
+            color: AppColors.black,
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
           ),
-        ),
-        height: 300,
-        child: SafeArea(
-          child: Column(
-            children: [
-              Stack(
-              alignment: Alignment.center,
+          height: 300,
+          child: SafeArea(
+            child: Column(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Stack(
+                  alignment: Alignment.center,
                   children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.menu,
-                        color: AppColors.white,
-                        size: 30,
-                      ),
-                      onPressed: () {
-                        Scaffold.of(context).openDrawer();
-                      },
-                    )
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        IconButton(
+                          icon: const Icon(
+                            Icons.menu,
+                            color: AppColors.white,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            Scaffold.of(context).openDrawer();
+                          },
+                        ),
+                      ],
+                    ),
+                    Image.asset(AppAssets.eurohiveName, height: 25),
                   ],
                 ),
-                Image.asset(AppAssets.eurohiveName, height: 25),
+                const SizedBox(height: 30),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 35,
+                        backgroundImage: AssetImage(AppAssets.joaoFoto),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Row(
+                    children: const [
+                      Text(
+                        "Olá, João!",
+                        style: TextStyle(color: AppColors.white, fontSize: 32),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
-              const SizedBox(height: 30),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 35,
-                      backgroundImage: AssetImage(AppAssets.joaoFoto),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Row(
-                  children: const [
-                    Text(
-                      "Olá, João!",
-                      style: TextStyle(color: AppColors.white, fontSize: 32),
-                    ),
-                  ],
-                ),
-              ),
-            ],
           ),
         ),
-      ),
 
-      Positioned(
-        bottom: -60,
-        left: 0,
-        right: 0,
-        child: _buildWelcomeSection(),
-      ),
-    ],
-  );
-}
+        Positioned(
+          bottom: -80,
+          left: 0,
+          right: 0,
+          child: _buildWelcomeSection(),
+        ),
+      ],
+    );
+  }
 
   Widget _buildQuickStats() {
     return Padding(
@@ -231,90 +228,87 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildNewsSection() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24),
+          child: const Text(
             'Últimas Notícias',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 230,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: 280,
-                  margin: const EdgeInsets.only(right: 16),
-                  child: Card(
-                    elevation: 4,
-                    color: AppColors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: AppColors.lightBlue.withValues(alpha: 0.3),
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(12),
-                            ),
-                          ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.article,
-                              size: 48,
-                              color: AppColors.blue,
-                            ),
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Notícia ${index + 1}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'Descrição breve da notícia que pode ter várias linhas...',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 14,
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 230,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: newsList.length,
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            itemBuilder: (context, index) {
+              final news = newsList[index];
+              return Container(
+                width: 280,
+                margin: const EdgeInsets.only(right: 16),
+                child: Card(
+                  color: AppColors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              },
-            ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 120,
+                        decoration: BoxDecoration(
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12),
+                          ),
+                          image: DecorationImage(
+                            image: AssetImage(news.imagePath),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              news.title,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              news.description,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildRecentProjects() {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -322,7 +316,6 @@ class _HomeScreenState extends State<HomeScreen> {
             'Projetos Recentes',
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 12),
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
