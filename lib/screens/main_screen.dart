@@ -119,7 +119,7 @@ class _MainScreenState extends State<MainScreen> {
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(color: AppColors.blue),
+            decoration: const BoxDecoration(color: AppColors.black),
             child: InkWell(
               onTap: () {
                 Navigator.pop(context);
@@ -153,7 +153,7 @@ class _MainScreenState extends State<MainScreen> {
                   const CircleAvatar(
                     radius: 30,
                     backgroundColor: AppColors.white,
-                    child: Icon(Icons.person, size: 35, color: AppColors.blue),
+                    child: Icon(Icons.person, size: 35, color: AppColors.black),
                   ),
                   const SizedBox(height: 10),
                   const Text(
