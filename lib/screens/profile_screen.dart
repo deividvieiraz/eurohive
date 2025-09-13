@@ -9,6 +9,10 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String name = "João Silva";
+  String email = "joao.silva@eurohive.com";
+  String role = "Desenvolvedor Sênior";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,18 +55,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                AppColors.blue,
-                AppColors.lightBlue,
-              ],
+              colors: [AppColors.blue, AppColors.lightBlue],
             ),
           ),
           child: const Center(
-            child: Icon(
-              Icons.person,
-              size: 80,
-              color: AppColors.white,
-            ),
+            child: Icon(Icons.person, size: 80, color: AppColors.white),
           ),
         ),
       ),
@@ -85,28 +82,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
           CircleAvatar(
             radius: 60,
             backgroundColor: AppColors.blue.withValues(alpha: 0.1),
-            child: const Icon(
-              Icons.person,
-              size: 60,
-              color: AppColors.blue,
-            ),
+            child: const Icon(Icons.person, size: 60, color: AppColors.blue),
           ),
           const SizedBox(height: 16),
-          const Text(
-            'João Silva',
-            style: TextStyle(
+          Text(
+            name,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: AppColors.black,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'joao.silva@eurohive.com',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
+          Text(
+            email,
+            style: const TextStyle(fontSize: 16, color: Colors.grey),
           ),
           const SizedBox(height: 8),
           Container(
@@ -115,9 +105,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: AppColors.blue.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Text(
-              'Desenvolvedor Sênior',
-              style: TextStyle(
+            child: Text(
+              role,
+              style: const TextStyle(
                 color: AppColors.blue,
                 fontWeight: FontWeight.w500,
               ),
@@ -159,11 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Expanded(
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: AppColors.blue,
-            size: 24,
-          ),
+          Icon(icon, color: AppColors.blue, size: 24),
           const SizedBox(height: 8),
           Text(
             value,
@@ -176,10 +162,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-            ),
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
             textAlign: TextAlign.center,
           ),
         ],
@@ -246,7 +229,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProjectCard(String title, String description, String status, Color color, IconData icon) {
+  Widget _buildProjectCard(
+      String title, String description, String status, Color color, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -270,35 +254,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.black,
-                  ),
-                ),
+                Text(title,
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.black)),
                 const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Text(description,
+                    style: const TextStyle(fontSize: 14, color: Colors.grey),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis),
               ],
             ),
           ),
@@ -306,7 +278,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: status == 'Aprovado' 
+              color: status == 'Aprovado'
                   ? Colors.green.withValues(alpha: 0.1)
                   : Colors.orange.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
@@ -353,9 +325,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   {'title': 'Multiplicadores', 'color': Colors.indigo, 'icon': Icons.share},
                   {'title': 'Euron Hub', 'color': Colors.amber, 'icon': Icons.hub},
                 ];
-                
+
                 final project = projects[index];
-                
+
                 return Container(
                   width: 100,
                   margin: const EdgeInsets.only(right: 12),
@@ -369,21 +341,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        project['icon'] as IconData,
-                        color: project['color'] as Color,
-                        size: 32,
-                      ),
+                      Icon(project['icon'] as IconData,
+                          color: project['color'] as Color, size: 32),
                       const SizedBox(height: 8),
-                      Text(
-                        project['title'] as String,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: project['color'] as Color,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+                      Text(project['title'] as String,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: project['color'] as Color,
+                          ),
+                          textAlign: TextAlign.center),
                     ],
                   ),
                 );
@@ -396,15 +363,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showEditProfileDialog() {
+    final nameController = TextEditingController(text: name);
+    final emailController = TextEditingController(text: email);
+    final roleController = TextEditingController(text: role);
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Editar Perfil'),
-        content: const Text('Funcionalidade de edição será implementada em breve.'),
+        title: const Text("Editar Perfil"),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(
+                controller: nameController,
+                decoration: const InputDecoration(labelText: "Nome"),
+              ),
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(labelText: "Email"),
+              ),
+              TextField(
+                controller: roleController,
+                decoration: const InputDecoration(labelText: "Cargo"),
+              ),
+            ],
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+            child: const Text("Cancelar"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.blue),
+            onPressed: () {
+              setState(() {
+                name = nameController.text;
+                email = emailController.text;
+                role = roleController.text;
+              });
+              Navigator.pop(context);
+            },
+            child: const Text("Salvar", style: TextStyle(color: AppColors.white)),
           ),
         ],
       ),
