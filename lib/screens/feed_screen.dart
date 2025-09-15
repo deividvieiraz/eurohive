@@ -46,7 +46,7 @@ class _FeedScreenState extends State<FeedScreen> {
   Widget _buildAppBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      height: 150,
+      height: 160,
       decoration: const BoxDecoration(color: AppColors.black),
       child: SafeArea(
         child: Column(
@@ -84,7 +84,7 @@ class _FeedScreenState extends State<FeedScreen> {
               ],
             ),
             Padding(
-              padding: EdgeInsetsGeometry.only(left: 24, right: 24, bottom: 24),
+              padding: EdgeInsetsGeometry.only(left: 24, right: 24, bottom: 5),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
