@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 
 class CreatePostScreen extends StatefulWidget {
-  const CreatePostScreen({super.key});
+  final String? prefilledTitle;
+  const CreatePostScreen({super.key, this.prefilledTitle});
 
   @override
   State<CreatePostScreen> createState() => _CreatePostScreenState();
 }
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
+ 
   final TextEditingController _controller = TextEditingController();
   bool _isTextEmpty = true;
 
