@@ -33,7 +33,11 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   bool _isLoadingAI = false;
   bool _isRecording = false;
   String? _currentAudioPath;
-  List<String> _aiSuggestions = [];
+  
+  // Estados para animação de digitação
+  final Map<String, TextEditingController> _textControllers = {};
+  final Map<String, bool> _isTypingAnimation = {};
+  final Map<String, String> _typingText = {};
 
   @override
   void initState() {
@@ -45,11 +49,26 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     for (int i = 0; i < _project.steps.length; i++) {
       _formKeys['step_$i'] = GlobalKey<FormState>();
     }
+    
+    // Initialize text controllers for each field
+    for (final step in _project.steps) {
+      for (final field in step.fields) {
+        if (field.type == model.FieldType.text || field.type == model.FieldType.textArea) {
+          _textControllers[field.id] = TextEditingController(text: _formData[field.id] ?? '');
+          _isTypingAnimation[field.id] = false;
+          _typingText[field.id] = '';
+        }
+      }
+    }
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    // Dispose text controllers
+    for (final controller in _textControllers.values) {
+      controller.dispose();
+    }
     AudioService.dispose();
     super.dispose();
   }
@@ -194,18 +213,10 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
-              if (widget.applicationMode == ApplicationMode.aiAssisted)
-                IconButton(
-                  icon: const Icon(Icons.lightbulb_outline, size: 20),
-                  onPressed: () => _getAISuggestions(field),
-                  tooltip: 'Obter sugestões da IA',
-                ),
             ],
           ),
           const SizedBox(height: 8),
           _buildFieldInput(field),
-          if (widget.applicationMode == ApplicationMode.aiAssisted && _aiSuggestions.isNotEmpty)
-            _buildAISuggestions(field),
           if (widget.applicationMode == ApplicationMode.audio)
             _buildAudioControls(field),
         ],
@@ -219,7 +230,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
         return Column(
           children: [
             TextFormField(
-              initialValue: _formData[field.id] ?? '',
+              controller: _textControllers[field.id],
               onChanged: (value) => _formData[field.id] = value,
               decoration: InputDecoration(
                 hintText: field.placeholder,
@@ -228,12 +239,35 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(color: AppColors.blue),
                 ),
-                suffixIcon: widget.applicationMode == ApplicationMode.aiAssisted && 
-                           (_formData[field.id] ?? '').isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.auto_fix_high, size: 20),
-                        onPressed: () => _improveTextWithAI(field.id, _formData[field.id] ?? ''),
-                        tooltip: 'Melhorar com IA',
+                suffixIcon: widget.applicationMode == ApplicationMode.aiAssisted
+                    ? Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if ((_formData[field.id] ?? '').isEmpty)
+                            IconButton(
+                              icon: _isLoadingAI 
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.psychology, size: 20),
+                              onPressed: _isLoadingAI ? null : () => _getAISuggestions(field),
+                              tooltip: 'Obter ajuda da IA',
+                            ),
+                          if ((_formData[field.id] ?? '').isNotEmpty)
+                            IconButton(
+                              icon: _isLoadingAI 
+                                  ? const SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : const Icon(Icons.auto_fix_high, size: 20),
+                              onPressed: _isLoadingAI ? null : () => _improveTextWithAI(field.id, _formData[field.id] ?? ''),
+                              tooltip: 'Melhorar com IA',
+                            ),
+                        ],
                       )
                     : null,
               ),
@@ -252,7 +286,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
 
       case model.FieldType.textArea:
         return TextFormField(
-          initialValue: _formData[field.id] ?? '',
+          controller: _textControllers[field.id],
           onChanged: (value) => _formData[field.id] = value,
           maxLines: 4,
           maxLength: field.maxLength,
@@ -263,12 +297,35 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.blue),
             ),
-            suffixIcon: widget.applicationMode == ApplicationMode.aiAssisted && 
-                       (_formData[field.id] ?? '').isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.auto_fix_high, size: 20),
-                    onPressed: () => _improveTextWithAI(field.id, _formData[field.id] ?? ''),
-                    tooltip: 'Melhorar com IA',
+            suffixIcon: widget.applicationMode == ApplicationMode.aiAssisted
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if ((_formData[field.id] ?? '').isEmpty)
+                        IconButton(
+                          icon: _isLoadingAI 
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.psychology, size: 20),
+                          onPressed: _isLoadingAI ? null : () => _getAISuggestions(field),
+                          tooltip: 'Obter ajuda da IA',
+                        ),
+                      if ((_formData[field.id] ?? '').isNotEmpty)
+                        IconButton(
+                          icon: _isLoadingAI 
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.auto_fix_high, size: 20),
+                          onPressed: _isLoadingAI ? null : () => _improveTextWithAI(field.id, _formData[field.id] ?? ''),
+                          tooltip: 'Melhorar com IA',
+                        ),
+                    ],
                   )
                 : null,
           ),
@@ -532,6 +589,33 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     );
   }
 
+  // Método para animação de digitação
+  Future<void> _typeTextAnimation(String fieldId, String text) async {
+    if (!_textControllers.containsKey(fieldId)) return;
+    
+    setState(() {
+      _isTypingAnimation[fieldId] = true;
+      _typingText[fieldId] = '';
+    });
+    
+    final controller = _textControllers[fieldId]!;
+    controller.clear();
+    
+    for (int i = 0; i <= text.length; i++) {
+      if (!_isTypingAnimation[fieldId]!) break; // Cancelar se necessário
+      
+      final currentText = text.substring(0, i);
+      controller.text = currentText;
+      _formData[fieldId] = currentText;
+      
+      await Future.delayed(const Duration(milliseconds: 30));
+    }
+    
+    setState(() {
+      _isTypingAnimation[fieldId] = false;
+    });
+  }
+
   // Métodos para IA
   Future<void> _getAISuggestions(model.FormField field) async {
     if (widget.applicationMode != ApplicationMode.aiAssisted) return;
@@ -541,22 +625,37 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     });
 
     try {
-      final suggestions = await GroqService.generateSuggestions(
-        projectType: _project.projectName,
-        stepTitle: _project.steps[_currentStep].title,
-        fieldLabel: field.label,
-        previousAnswers: _formData,
+      // Gerar sugestão específica para o campo
+      final suggestion = await GroqService.generateText(
+        prompt: '''
+Você é um assistente especializado em ajudar funcionários a preencher formulários de aplicação para projetos corporativos.
+
+Contexto:
+- Projeto: ${_project.projectName}
+- Etapa: ${_project.steps[_currentStep].title}
+- Campo: ${field.label}
+${_formData.isNotEmpty ? '- Informações já preenchidas: ${_formData.entries.map((e) => '${e.key}: ${e.value}').join(', ')}' : ''}
+
+Por favor, forneça uma sugestão específica e profissional para este campo. Seja direto e prático, fornecendo um texto que pode ser usado diretamente no campo.
+
+Retorne apenas o texto sugerido, sem explicações adicionais.
+''',
+        maxTokens: 200,
+        temperature: 0.6,
       );
 
       setState(() {
-        _aiSuggestions = suggestions;
         _isLoadingAI = false;
       });
+
+      // Aplicar sugestão com animação de digitação
+      await _typeTextAnimation(field.id, suggestion.replaceAll('"', '').trim());
+      
     } catch (e) {
       setState(() {
         _isLoadingAI = false;
       });
-      _showErrorDialog('Erro ao obter sugestões da IA: $e');
+      _showErrorDialog('Erro ao obter sugestão da IA: $e');
     }
   }
 
@@ -579,9 +678,12 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
       );
 
       setState(() {
-        _formData[fieldId] = improvedText;
         _isLoadingAI = false;
       });
+
+      // Aplicar texto melhorado com animação de digitação
+      await _typeTextAnimation(fieldId, improvedText.trim());
+      
     } catch (e) {
       setState(() {
         _isLoadingAI = false;
@@ -664,60 +766,6 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     );
   }
 
-  Widget _buildAISuggestions(model.FormField field) {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.darkOrange.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.darkOrange.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.lightbulb, color: AppColors.darkOrange, size: 16),
-              const SizedBox(width: 8),
-              Text(
-                'Sugestões da IA:',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.darkOrange,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ..._aiSuggestions.map((suggestion) => Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _formData[field.id] = suggestion;
-                });
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                child: Text(
-                  suggestion,
-                  style: const TextStyle(fontSize: 13),
-                ),
-              ),
-            ),
-          )),
-        ],
-      ),
-    );
-  }
 
   Widget _buildAudioControls(model.FormField field) {
     return Container(
