@@ -36,6 +36,11 @@ dependencies:
   cupertino_icons: ^1.0.8
   google_fonts: ^6.2.1
   flutter_svg: ^2.0.9
+  
+  # AI dependencies
+  http: ^1.1.0
+  permission_handler: ^11.0.1
+  path_provider: ^2.1.1
 
 dev_dependencies:
   flutter_test:

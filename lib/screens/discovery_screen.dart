@@ -1,6 +1,6 @@
 import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
-import 'package:eurohive/screens/project_application_screen.dart';
+import 'package:eurohive/screens/application_method_choice_screen.dart';
 import 'package:flutter/material.dart';
 
 class DiscoveryScreen extends StatefulWidget {
@@ -559,7 +559,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                           context,
                           PageRouteBuilder(
                             pageBuilder: (context, animation, secondaryAnimation) =>
-                                ProjectApplicationScreen(projectId: project['id']),
+                                ApplicationMethodChoiceScreen(projectId: project['id']),
                             transitionsBuilder: (context, animation, secondaryAnimation, child) {
                               const begin = Offset(0.0, 1.0);
                               const end = Offset.zero;

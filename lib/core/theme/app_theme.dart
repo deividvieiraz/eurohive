@@ -12,11 +12,9 @@ class AppTheme {
         brightness: Brightness.light,
         primary: AppColors.lightBlue,
         secondary: AppColors.lightBlue,
-        background: AppColors.white,
         surface: AppColors.white,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onBackground: Colors.black,
         onSurface: Colors.black,
       ),
       appBarTheme: AppBarTheme(

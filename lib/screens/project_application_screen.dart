@@ -1,13 +1,21 @@
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/models/project_application_model.dart' as model;
 import 'package:eurohive/routes/app_routes.dart';
+import 'package:eurohive/screens/application_method_choice_screen.dart';
+import 'package:eurohive/services/groq_service.dart';
+import 'package:eurohive/services/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class ProjectApplicationScreen extends StatefulWidget {
   final String projectId;
+  final ApplicationMode applicationMode;
 
-  const ProjectApplicationScreen({super.key, required this.projectId});
+  const ProjectApplicationScreen({
+    super.key, 
+    required this.projectId,
+    this.applicationMode = ApplicationMode.manual,
+  });
 
   @override
   State<ProjectApplicationScreen> createState() =>
@@ -20,6 +28,12 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   int _currentStep = 0;
   final Map<String, dynamic> _formData = {};
   final Map<String, GlobalKey<FormState>> _formKeys = {};
+  
+  // Estados para IA e áudio
+  bool _isLoadingAI = false;
+  bool _isRecording = false;
+  String? _currentAudioPath;
+  List<String> _aiSuggestions = [];
 
   @override
   void initState() {
@@ -36,6 +50,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    AudioService.dispose();
     super.dispose();
   }
 
@@ -99,12 +114,36 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          LinearProgressIndicator(
-            value: (_currentStep + 1) / _project.steps.length,
-            backgroundColor: Colors.grey[300],
-            valueColor: const AlwaysStoppedAnimation<Color>(AppColors.darkOrange),
-            minHeight: 20,
-            borderRadius: BorderRadius.all(Radius.circular(30)),
+          Stack(
+            children: [
+              LinearProgressIndicator(
+                value: (_currentStep + 1) / _project.steps.length,
+                backgroundColor: Colors.grey[300],
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.darkOrange),
+                minHeight: 20,
+                borderRadius: BorderRadius.all(Radius.circular(30)),
+              ),
+              if (_isLoadingAI)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
+                      color: AppColors.darkOrange,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Padding(
+                      padding: EdgeInsets.all(3),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
@@ -147,12 +186,28 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '${field.label}${field.isRequired ? ' *' : ''}',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${field.label}${field.isRequired ? ' *' : ''}',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ),
+              if (widget.applicationMode == ApplicationMode.aiAssisted)
+                IconButton(
+                  icon: const Icon(Icons.lightbulb_outline, size: 20),
+                  onPressed: () => _getAISuggestions(field),
+                  tooltip: 'Obter sugestões da IA',
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           _buildFieldInput(field),
+          if (widget.applicationMode == ApplicationMode.aiAssisted && _aiSuggestions.isNotEmpty)
+            _buildAISuggestions(field),
+          if (widget.applicationMode == ApplicationMode.audio)
+            _buildAudioControls(field),
         ],
       ),
     );
@@ -161,26 +216,38 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   Widget _buildFieldInput(model.FormField field) {
     switch (field.type) {
       case model.FieldType.text:
-        return TextFormField(
-          initialValue: _formData[field.id] ?? '',
-          onChanged: (value) => _formData[field.id] = value,
-          decoration: InputDecoration(
-            hintText: field.placeholder,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.blue),
+        return Column(
+          children: [
+            TextFormField(
+              initialValue: _formData[field.id] ?? '',
+              onChanged: (value) => _formData[field.id] = value,
+              decoration: InputDecoration(
+                hintText: field.placeholder,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.blue),
+                ),
+                suffixIcon: widget.applicationMode == ApplicationMode.aiAssisted && 
+                           (_formData[field.id] ?? '').isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.auto_fix_high, size: 20),
+                        onPressed: () => _improveTextWithAI(field.id, _formData[field.id] ?? ''),
+                        tooltip: 'Melhorar com IA',
+                      )
+                    : null,
+              ),
+              validator: field.isRequired
+                  ? (value) {
+                      if (value == null || value.isEmpty) {
+                        return field.validationMessage ??
+                            'Este campo é obrigatório';
+                      }
+                      return null;
+                    }
+                  : null,
             ),
-          ),
-          validator: field.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return field.validationMessage ??
-                        'Este campo é obrigatório';
-                  }
-                  return null;
-                }
-              : null,
+          ],
         );
 
       case model.FieldType.textArea:
@@ -196,6 +263,14 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
               borderRadius: BorderRadius.circular(8),
               borderSide: const BorderSide(color: AppColors.blue),
             ),
+            suffixIcon: widget.applicationMode == ApplicationMode.aiAssisted && 
+                       (_formData[field.id] ?? '').isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.auto_fix_high, size: 20),
+                    onPressed: () => _improveTextWithAI(field.id, _formData[field.id] ?? ''),
+                    tooltip: 'Melhorar com IA',
+                  )
+                : null,
           ),
           validator: field.isRequired
               ? (value) {
@@ -452,6 +527,290 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
             },
             child: const Text('Sair'),
           ),
+        ],
+      ),
+    );
+  }
+
+  // Métodos para IA
+  Future<void> _getAISuggestions(model.FormField field) async {
+    if (widget.applicationMode != ApplicationMode.aiAssisted) return;
+
+    setState(() {
+      _isLoadingAI = true;
+    });
+
+    try {
+      final suggestions = await GroqService.generateSuggestions(
+        projectType: _project.projectName,
+        stepTitle: _project.steps[_currentStep].title,
+        fieldLabel: field.label,
+        previousAnswers: _formData,
+      );
+
+      setState(() {
+        _aiSuggestions = suggestions;
+        _isLoadingAI = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingAI = false;
+      });
+      _showErrorDialog('Erro ao obter sugestões da IA: $e');
+    }
+  }
+
+  Future<void> _improveTextWithAI(String fieldId, String currentText) async {
+    if (widget.applicationMode != ApplicationMode.aiAssisted) return;
+
+    setState(() {
+      _isLoadingAI = true;
+    });
+
+    try {
+      final field = _project.steps[_currentStep].fields.firstWhere(
+        (f) => f.id == fieldId,
+      );
+
+      final improvedText = await GroqService.improveText(
+        originalText: currentText,
+        fieldLabel: field.label,
+        projectType: _project.projectName,
+      );
+
+      setState(() {
+        _formData[fieldId] = improvedText;
+        _isLoadingAI = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoadingAI = false;
+      });
+      _showErrorDialog('Erro ao melhorar texto: $e');
+    }
+  }
+
+  // Métodos para áudio
+  Future<void> _startRecording() async {
+    try {
+      final success = await AudioService.startRecording();
+      if (success) {
+        setState(() {
+          _isRecording = true;
+        });
+      }
+    } catch (e) {
+      _showErrorDialog('Erro ao iniciar gravação: $e');
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    try {
+      final path = await AudioService.stopRecording();
+      setState(() {
+        _isRecording = false;
+        _currentAudioPath = path;
+      });
+
+      if (path != null) {
+        _transcribeAudio(path);
+      }
+    } catch (e) {
+      setState(() {
+        _isRecording = false;
+      });
+      _showErrorDialog('Erro ao parar gravação: $e');
+    }
+  }
+
+  Future<void> _transcribeAudio(String audioPath) async {
+    setState(() {
+      _isLoadingAI = true;
+    });
+
+    try {
+      final transcription = await GroqService.transcribeAudio(audioPath);
+      
+      // Aplicar transcrição ao campo atual
+      final currentStep = _project.steps[_currentStep];
+      if (currentStep.fields.isNotEmpty) {
+        final firstField = currentStep.fields.first;
+        setState(() {
+          _formData[firstField.id] = transcription;
+          _isLoadingAI = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoadingAI = false;
+      });
+      _showErrorDialog('Erro ao transcrever áudio: $e');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Erro'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAISuggestions(model.FormField field) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.darkOrange.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.darkOrange.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lightbulb, color: AppColors.darkOrange, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Sugestões da IA:',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.darkOrange,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ..._aiSuggestions.map((suggestion) => Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: InkWell(
+              onTap: () {
+                setState(() {
+                  _formData[field.id] = suggestion;
+                });
+              },
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Text(
+                  suggestion,
+                  style: const TextStyle(fontSize: 13),
+                ),
+              ),
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAudioControls(model.FormField field) {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.green.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(Icons.mic, color: Colors.green, size: 16),
+              const SizedBox(width: 8),
+              Text(
+                'Gravação de Áudio:',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (!_isRecording)
+                ElevatedButton.icon(
+                  onPressed: _startRecording,
+                  icon: const Icon(Icons.mic, size: 18),
+                  label: const Text('Gravar'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                )
+              else
+                ElevatedButton.icon(
+                  onPressed: _stopRecording,
+                  icon: const Icon(Icons.stop, size: 18),
+                  label: const Text('Parar'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+              if (_currentAudioPath != null) ...[
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () => AudioService.playAudio(_currentAudioPath!),
+                  icon: const Icon(Icons.play_arrow, size: 18),
+                  label: const Text('Reproduzir'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                ),
+              ],
+            ],
+          ),
+          if (_isRecording)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Gravando...',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.red[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );
