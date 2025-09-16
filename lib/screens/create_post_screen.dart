@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
+import 'package:eurohive/models/posts.dart';
 
 class CreatePostScreen extends StatefulWidget {
   final String? prefilledTitle;
@@ -10,7 +11,6 @@ class CreatePostScreen extends StatefulWidget {
 }
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
- 
   final TextEditingController _controller = TextEditingController();
   bool _isTextEmpty = true;
 
@@ -20,6 +20,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.prefilledTitle != null) {
+      _controller.text = widget.prefilledTitle!;
+      _isTextEmpty = widget.prefilledTitle!.trim().isEmpty;
+    }
     _controller.addListener(() {
       setState(() {
         _isTextEmpty = _controller.text.trim().isEmpty;
@@ -143,6 +147,24 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     );
   }
 
+  void _post() {
+    if (_controller.text.trim().isEmpty) return;
+
+    final newPost = Post(
+      author: "Você",
+      username: "@voce",
+      title: "TestePost",
+      content: _controller.text,
+      imagePath: "",
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      time: "agora",
+    );
+
+    Navigator.pop(context, newPost);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,12 +198,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                   vertical: 8,
                 ),
               ),
-              onPressed: _isTextEmpty
-                  ? null
-                  : () {
-                      Navigator.pop(context, _controller.text);
-                      _controller.clear();
-                    },
+              onPressed: _isTextEmpty ? null : _post,
               child: const Text(
                 "Postar",
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -221,7 +238,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                 tooltip: "Adicionar imagem",
                 icon: const Icon(Icons.image, color: AppColors.blue),
                 onPressed: () {
-                  // aqui depois pode abrir um picker de imagens
+                  // TODO: abrir picker de imagens
                 },
               ),
               IconButton(
