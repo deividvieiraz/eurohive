@@ -6,6 +6,9 @@ import 'package:eurohive/services/groq_service.dart';
 import 'package:eurohive/services/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:speech_to_text/speech_to_text.dart';
+import 'package:avatar_glow/avatar_glow.dart';
+import 'dart:async';
 
 class ProjectApplicationScreen extends StatefulWidget {
   final String projectId;
@@ -31,8 +34,13 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   
   // Estados para IA e áudio
   bool _isLoadingAI = false;
-  bool _isRecording = false;
-  String? _currentAudioPath;
+  
+  // Estados para speech-to-text
+  final SpeechToText _speechToText = SpeechToText();
+  final Map<String, bool> _isListeningByField = {};
+  final Map<String, String> _recognizedTextByField = {};
+  final Map<String, double> _confidenceByField = {};
+  final Map<String, Timer?> _silenceTimers = {};
   
   // Estados para animação de digitação
   final Map<String, TextEditingController> _textControllers = {};
@@ -60,6 +68,9 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
         }
       }
     }
+    
+    // Initialize speech-to-text
+    _initSpeech();
   }
 
   @override
@@ -68,6 +79,10 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     // Dispose text controllers
     for (final controller in _textControllers.values) {
       controller.dispose();
+    }
+    // Cancelar todos os timers de silêncio
+    for (final timer in _silenceTimers.values) {
+      timer?.cancel();
     }
     AudioService.dispose();
     super.dispose();
@@ -217,8 +232,6 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           ),
           const SizedBox(height: 8),
           _buildFieldInput(field),
-          if (widget.applicationMode == ApplicationMode.audio)
-            _buildAudioControls(field),
         ],
       ),
     );
@@ -239,37 +252,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(color: AppColors.blue),
                 ),
-                suffixIcon: widget.applicationMode == ApplicationMode.aiAssisted
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if ((_formData[field.id] ?? '').isEmpty)
-                            IconButton(
-                              icon: _isLoadingAI 
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : const Icon(Icons.psychology, size: 20),
-                              onPressed: _isLoadingAI ? null : () => _getAISuggestions(field),
-                              tooltip: 'Obter ajuda da IA',
-                            ),
-                          if ((_formData[field.id] ?? '').isNotEmpty)
-                            IconButton(
-                              icon: _isLoadingAI 
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(strokeWidth: 2),
-                                    )
-                                  : const Icon(Icons.auto_fix_high, size: 20),
-                              onPressed: _isLoadingAI ? null : () => _improveTextWithAI(field.id, _formData[field.id] ?? ''),
-                              tooltip: 'Melhorar com IA',
-                            ),
-                        ],
-                      )
-                    : null,
+                suffixIcon: _buildSuffixIcons(field),
               ),
               validator: field.isRequired
                   ? (value) {
@@ -285,59 +268,33 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
         );
 
       case model.FieldType.textArea:
-        return TextFormField(
-          controller: _textControllers[field.id],
-          onChanged: (value) => _formData[field.id] = value,
-          maxLines: 4,
-          maxLength: field.maxLength,
-          decoration: InputDecoration(
-            hintText: field.placeholder,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(color: AppColors.blue),
+        return Column(
+          children: [
+            TextFormField(
+              controller: _textControllers[field.id],
+              onChanged: (value) => _formData[field.id] = value,
+              maxLines: 4,
+              maxLength: field.maxLength,
+              decoration: InputDecoration(
+                hintText: field.placeholder,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: AppColors.blue),
+                ),
+                suffixIcon: _buildSuffixIcons(field),
+              ),
+              validator: field.isRequired
+                  ? (value) {
+                      if (value == null || value.isEmpty) {
+                        return field.validationMessage ??
+                            'Este campo é obrigatório';
+                      }
+                      return null;
+                    }
+                  : null,
             ),
-            suffixIcon: widget.applicationMode == ApplicationMode.aiAssisted
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if ((_formData[field.id] ?? '').isEmpty)
-                        IconButton(
-                          icon: _isLoadingAI 
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Icon(Icons.psychology, size: 20),
-                          onPressed: _isLoadingAI ? null : () => _getAISuggestions(field),
-                          tooltip: 'Obter ajuda da IA',
-                        ),
-                      if ((_formData[field.id] ?? '').isNotEmpty)
-                        IconButton(
-                          icon: _isLoadingAI 
-                              ? const SizedBox(
-                                  width: 16,
-                                  height: 16,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : const Icon(Icons.auto_fix_high, size: 20),
-                          onPressed: _isLoadingAI ? null : () => _improveTextWithAI(field.id, _formData[field.id] ?? ''),
-                          tooltip: 'Melhorar com IA',
-                        ),
-                    ],
-                  )
-                : null,
-          ),
-          validator: field.isRequired
-              ? (value) {
-                  if (value == null || value.isEmpty) {
-                    return field.validationMessage ??
-                        'Este campo é obrigatório';
-                  }
-                  return null;
-                }
-              : null,
+          ],
         );
 
       case model.FieldType.dropdown:
@@ -692,64 +649,6 @@ Retorne apenas o texto sugerido, sem explicações adicionais.
     }
   }
 
-  // Métodos para áudio
-  Future<void> _startRecording() async {
-    try {
-      final success = await AudioService.startRecording();
-      if (success) {
-        setState(() {
-          _isRecording = true;
-        });
-      }
-    } catch (e) {
-      _showErrorDialog('Erro ao iniciar gravação: $e');
-    }
-  }
-
-  Future<void> _stopRecording() async {
-    try {
-      final path = await AudioService.stopRecording();
-      setState(() {
-        _isRecording = false;
-        _currentAudioPath = path;
-      });
-
-      if (path != null) {
-        _transcribeAudio(path);
-      }
-    } catch (e) {
-      setState(() {
-        _isRecording = false;
-      });
-      _showErrorDialog('Erro ao parar gravação: $e');
-    }
-  }
-
-  Future<void> _transcribeAudio(String audioPath) async {
-    setState(() {
-      _isLoadingAI = true;
-    });
-
-    try {
-      final transcription = await GroqService.transcribeAudio(audioPath);
-      
-      // Aplicar transcrição ao campo atual
-      final currentStep = _project.steps[_currentStep];
-      if (currentStep.fields.isNotEmpty) {
-        final firstField = currentStep.fields.first;
-        setState(() {
-          _formData[firstField.id] = transcription;
-          _isLoadingAI = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _isLoadingAI = false;
-      });
-      _showErrorDialog('Erro ao transcrever áudio: $e');
-    }
-  }
-
   void _showErrorDialog(String message) {
     showDialog(
       context: context,
@@ -766,103 +665,140 @@ Retorne apenas o texto sugerido, sem explicações adicionais.
     );
   }
 
+  // Métodos para speech-to-text
+  void _initSpeech() async {
+    await _speechToText.initialize();
+    setState(() {});
+  }
 
-  Widget _buildAudioControls(model.FormField field) {
-    return Container(
-      margin: const EdgeInsets.only(top: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.green.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(Icons.mic, color: Colors.green, size: 16),
-              const SizedBox(width: 8),
-              Text(
-                'Gravação de Áudio:',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.green,
-                ),
-              ),
-            ],
+  void _stopListeningForField(String fieldId) {
+    _speechToText.stop();
+    _silenceTimers[fieldId]?.cancel();
+    _silenceTimers[fieldId] = null;
+    setState(() {
+      _isListeningByField[fieldId] = false;
+    });
+  }
+
+  Widget? _buildSuffixIcons(model.FormField field) {
+    List<Widget> icons = [];
+    
+    // Botão de microfone para modo áudio
+    if (widget.applicationMode == ApplicationMode.audio) {
+      final isListening = _isListeningByField[field.id] ?? false;
+      icons.add(
+        AvatarGlow(
+          animate: isListening,
+          glowColor: Colors.blue,
+          duration: const Duration(milliseconds: 2000),
+          repeat: true,
+          child: IconButton(
+            icon: Icon(
+              isListening ? Icons.stop : Icons.mic,
+              color: isListening ? Colors.red : Colors.blue,
+              size: 20,
+            ),
+            onPressed: () => _listenToSpeech(field),
+            tooltip: isListening ? 'Parar gravação' : 'Gravar áudio',
           ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (!_isRecording)
-                ElevatedButton.icon(
-                  onPressed: _startRecording,
-                  icon: const Icon(Icons.mic, size: 18),
-                  label: const Text('Gravar'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  ),
-                )
-              else
-                ElevatedButton.icon(
-                  onPressed: _stopRecording,
-                  icon: const Icon(Icons.stop, size: 18),
-                  label: const Text('Parar'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  ),
-                ),
-              if (_currentAudioPath != null) ...[
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: () => AudioService.playAudio(_currentAudioPath!),
-                  icon: const Icon(Icons.play_arrow, size: 18),
-                  label: const Text('Reproduzir'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  ),
-                ),
-              ],
-            ],
-          ),
-          if (_isRecording)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
+        ),
+      );
+    }
+    
+    // Botões de IA para modo assistido
+    if (widget.applicationMode == ApplicationMode.aiAssisted) {
+      if ((_formData[field.id] ?? '').isEmpty) {
+        icons.add(
+          IconButton(
+            icon: _isLoadingAI 
+                ? const SizedBox(
                     width: 16,
                     height: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Gravando...',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.red[600],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.psychology, size: 20),
+            onPressed: _isLoadingAI ? null : () => _getAISuggestions(field),
+            tooltip: 'Obter ajuda da IA',
+          ),
+        );
+      }
+      if ((_formData[field.id] ?? '').isNotEmpty) {
+        icons.add(
+          IconButton(
+            icon: _isLoadingAI 
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.auto_fix_high, size: 20),
+            onPressed: _isLoadingAI ? null : () => _improveTextWithAI(field.id, _formData[field.id] ?? ''),
+            tooltip: 'Melhorar com IA',
+          ),
+        );
+      }
+    }
+    
+    return icons.isNotEmpty ? Row(mainAxisSize: MainAxisSize.min, children: icons) : null;
   }
+
+  void _listenToSpeech(model.FormField field) async {
+    final fieldId = field.id;
+    final isCurrentlyListening = _isListeningByField[fieldId] ?? false;
+    
+    if (!isCurrentlyListening) {
+      bool available = await _speechToText.initialize(
+        onStatus: (status) => print('onStatus: $status'),
+        onError: (error) => print('onError: $error'),
+      );
+      if (available) {
+        setState(() {
+          _isListeningByField[fieldId] = true;
+          _recognizedTextByField[fieldId] = '';
+          _confidenceByField[fieldId] = 1.0;
+        });
+        
+        // Iniciar timer de silêncio
+        _startSilenceTimer(fieldId);
+        
+        _speechToText.listen(
+          onResult: (result) {
+            // Resetar timer a cada resultado (nova fala detectada)
+            _resetSilenceTimer(fieldId);
+            
+            setState(() {
+              _recognizedTextByField[fieldId] = result.recognizedWords;
+              if (result.hasConfidenceRating && result.confidence > 0) {
+                _confidenceByField[fieldId] = result.confidence;
+              }
+              
+              // Atualizar o campo de input em tempo real
+              if (_textControllers.containsKey(fieldId)) {
+                _textControllers[fieldId]!.text = _recognizedTextByField[fieldId]!;
+                _formData[fieldId] = _recognizedTextByField[fieldId]!;
+              }
+            });
+          },
+        );
+      }
+    } else {
+      _stopListeningForField(fieldId);
+    }
+  }
+
+  void _startSilenceTimer(String fieldId) {
+    _silenceTimers[fieldId]?.cancel();
+    _silenceTimers[fieldId] = Timer(const Duration(seconds: 2), () {
+      // Auto-pausar após 2 segundos de silêncio
+      _stopListeningForField(fieldId);
+    });
+  }
+
+  void _resetSilenceTimer(String fieldId) {
+    _silenceTimers[fieldId]?.cancel();
+    _startSilenceTimer(fieldId);
+  }
+
 }
 
 class ApplicationSuccessScreen extends StatelessWidget {
