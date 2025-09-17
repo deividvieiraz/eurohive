@@ -137,7 +137,7 @@ class _FeedScreenState extends State<FeedScreen> {
         children: [
           const CircleAvatar(
             backgroundColor: AppColors.blue,
-            child: Icon(Icons.person, color: AppColors.white),
+            backgroundImage: AssetImage(AppAssets.joaoFoto),
           ),
           const SizedBox(width: 12),
           Expanded(

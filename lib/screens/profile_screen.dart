@@ -1,3 +1,4 @@
+import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:flutter/material.dart';
 
@@ -41,31 +42,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
       expandedHeight: 200,
       floating: false,
       pinned: true,
-      backgroundColor: AppColors.blue,
+      backgroundColor: AppColors.black,
       flexibleSpace: FlexibleSpaceBar(
-        title: const Text(
-          'Perfil',
-          style: TextStyle(
-            color: AppColors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [AppColors.blue, AppColors.lightBlue],
+        titlePadding: const EdgeInsets.only(bottom: 80),
+        title: const Center(
+          child: Text(
+            'Perfil',
+            style: TextStyle(
+              color: AppColors.white,
+              fontWeight: FontWeight.bold,
             ),
-          ),
-          child: const Center(
-            child: Icon(Icons.person, size: 80, color: AppColors.white),
           ),
         ),
       ),
+
       actions: [
         IconButton(
-          icon: const Icon(Icons.edit, color: AppColors.white),
+          icon: const Icon(Icons.edit_square, color: AppColors.white),
           onPressed: () {
             _showEditProfileDialog();
           },
@@ -82,7 +75,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           CircleAvatar(
             radius: 60,
             backgroundColor: AppColors.blue.withValues(alpha: 0.1),
-            child: const Icon(Icons.person, size: 60, color: AppColors.blue),
+            backgroundImage: AssetImage(AppAssets.joaoFoto),
           ),
           const SizedBox(height: 16),
           Text(
@@ -94,10 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 4),
-          Text(
-            email,
-            style: const TextStyle(fontSize: 16, color: Colors.grey),
-          ),
+          Text(email, style: const TextStyle(fontSize: 16, color: Colors.grey)),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -135,7 +125,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       child: Row(
         children: [
-          _buildStatItem('Projetos\nAplicados', '12', Icons.assignment_turned_in),
+          _buildStatItem(
+            'Projetos\nAplicados',
+            '12',
+            Icons.assignment_turned_in,
+          ),
           _buildStatDivider(),
           _buildStatItem('Projetos\nAprovados', '8', Icons.check_circle),
           _buildStatDivider(),
@@ -230,7 +224,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProjectCard(
-      String title, String description, String status, Color color, IconData icon) {
+    String title,
+    String description,
+    String status,
+    Color color,
+    IconData icon,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -261,16 +260,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.black)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.black,
+                  ),
+                ),
                 const SizedBox(height: 4),
-                Text(description,
-                    style: const TextStyle(fontSize: 14, color: Colors.grey),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  description,
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
@@ -319,11 +323,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
               itemCount: 5,
               itemBuilder: (context, index) {
                 final projects = [
-                  {'title': 'Hackathon', 'color': Colors.green, 'icon': Icons.event},
-                  {'title': 'Challenge', 'color': Colors.red, 'icon': Icons.psychology},
-                  {'title': 'Imersões', 'color': Colors.teal, 'icon': Icons.school},
-                  {'title': 'Multiplicadores', 'color': Colors.indigo, 'icon': Icons.share},
-                  {'title': 'Euron Hub', 'color': Colors.amber, 'icon': Icons.hub},
+                  {
+                    'title': 'Hackathon',
+                    'color': Colors.green,
+                    'icon': Icons.event,
+                  },
+                  {
+                    'title': 'Challenge',
+                    'color': Colors.red,
+                    'icon': Icons.psychology,
+                  },
+                  {
+                    'title': 'Imersões',
+                    'color': Colors.teal,
+                    'icon': Icons.school,
+                  },
+                  {
+                    'title': 'Multiplicadores',
+                    'color': Colors.indigo,
+                    'icon': Icons.share,
+                  },
+                  {
+                    'title': 'Euron Hub',
+                    'color': Colors.amber,
+                    'icon': Icons.hub,
+                  },
                 ];
 
                 final project = projects[index];
@@ -341,16 +365,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(project['icon'] as IconData,
-                          color: project['color'] as Color, size: 32),
+                      Icon(
+                        project['icon'] as IconData,
+                        color: project['color'] as Color,
+                        size: 32,
+                      ),
                       const SizedBox(height: 8),
-                      Text(project['title'] as String,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: project['color'] as Color,
-                          ),
-                          textAlign: TextAlign.center),
+                      Text(
+                        project['title'] as String,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: project['color'] as Color,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ],
                   ),
                 );
@@ -404,7 +433,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               });
               Navigator.pop(context);
             },
-            child: const Text("Salvar", style: TextStyle(color: AppColors.white)),
+            child: const Text(
+              "Salvar",
+              style: TextStyle(color: AppColors.white),
+            ),
           ),
         ],
       ),
