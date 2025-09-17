@@ -2,7 +2,9 @@ import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/models/news.dart';
 import 'package:eurohive/screens/news_details_screen.dart';
+import 'package:eurohive/screens/projects_details_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:eurohive/data/projects_data.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -322,8 +324,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentProjects() {
+    // Pega os 3 primeiros projetos (ou pode usar takeLast para pegar os mais recentes)
+    final recentProjects = projects.take(3).toList();
+
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -334,8 +339,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ListView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: 3,
+            itemCount: recentProjects.length,
             itemBuilder: (context, index) {
+              final project = recentProjects[index];
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
                 child: Card(
@@ -346,20 +353,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: AppColors.blue,
-                      child: Text(
-                        'P${index + 1}',
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      backgroundColor: project['color'],
+                      child: Icon(project['icon'], color: Colors.white),
                     ),
-                    title: Text('Projeto ${index + 1}'),
-                    subtitle: Text('Descrição do projeto ${index + 1}'),
+                    title: Text(project['title']),
+                    subtitle: Text(project['description']),
                     trailing: const Icon(Icons.arrow_forward_ios),
                     onTap: () {
-                      // Navegar para detalhes do projeto
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              ProjectDetailScreen(project: project),
+                        ),
+                      );
                     },
                   ),
                 ),
