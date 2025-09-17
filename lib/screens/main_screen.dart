@@ -173,43 +173,6 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.home),
-            title: const Text('Início'),
-            onTap: () {
-              _pageController.animateToPage(
-                0,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.article),
-            title: const Text('Feed'),
-            onTap: () {
-              _pageController.animateToPage(
-                1,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.explore),
-            title: const Text('Descobrir'),
-            onTap: () {
-              _pageController.animateToPage(
-                2,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-              );
-              Navigator.pop(context);
-            },
-          ),
-          const Divider(),
-          ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Meu Perfil'),
             onTap: () {
