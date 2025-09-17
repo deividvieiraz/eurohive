@@ -1,3 +1,4 @@
+import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/screens/discovery_screen.dart';
 import 'package:eurohive/screens/feed_screen.dart';
@@ -153,7 +154,8 @@ class _MainScreenState extends State<MainScreen> {
                   const CircleAvatar(
                     radius: 30,
                     backgroundColor: AppColors.white,
-                    child: Icon(Icons.person, size: 35, color: AppColors.black),
+                    backgroundImage: AssetImage(AppAssets.joaoFoto),
+                    //child: Icon(Icons.person, size: 35, color: AppColors.black),
                   ),
                   const SizedBox(height: 10),
                   const Text(
