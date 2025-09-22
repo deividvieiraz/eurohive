@@ -39,12 +39,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildAppBar() {
     return SliverAppBar(
-      expandedHeight: 200,
+      expandedHeight: 150,
       floating: false,
       pinned: true,
       backgroundColor: AppColors.black,
       flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(bottom: 80),
+        titlePadding: const EdgeInsets.only(bottom: 50),
         title: const Center(
           child: Text(
             'Perfil',

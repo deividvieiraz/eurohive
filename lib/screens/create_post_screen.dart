@@ -153,7 +153,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final newPost = Post(
       author: "Você",
       username: "@voce",
-      title: "TestePost",
       content: _controller.text,
       imagePath: "",
       likes: 0,
