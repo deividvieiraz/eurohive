@@ -92,7 +92,13 @@ Mantenha o tom profissional e corporativo. Seja específico e útil.
     required String originalText,
     required String fieldLabel,
     required String projectType,
+    int? maxLength,
   }) async {
+    String lengthConstraint = '';
+    if (maxLength != null) {
+      lengthConstraint = '\nIMPORTANTE: Este campo tem limite de $maxLength caracteres. O texto melhorado deve respeitar este limite.';
+    }
+
     String prompt =
         '''
 Você é um assistente especializado em melhorar textos corporativos.
@@ -100,13 +106,14 @@ Você é um assistente especializado em melhorar textos corporativos.
 Contexto:
 - Projeto: $projectType
 - Campo: $fieldLabel
-- Texto original: $originalText
+- Texto original: $originalText$lengthConstraint
 
 Por favor, melhore este texto mantendo:
 1. O significado original
 2. Tom profissional e corporativo
 3. Clareza e objetividade
 4. Relevância para o contexto do projeto
+5. Respeitar o limite de caracteres (se aplicável)
 
 Retorne apenas o texto melhorado, sem explicações adicionais.
 ''';
@@ -114,12 +121,13 @@ Retorne apenas o texto melhorado, sem explicações adicionais.
     return await generateText(prompt: prompt, maxTokens: 400, temperature: 0.5);
   }
 
-  // Método para gerar sugestões de preenchimento baseadas no contexto
-  static Future<List<String>> generateSuggestions({
+  // Método para gerar sugestões concisas para o balão
+  static Future<List<String>> generateQuickSuggestions({
     required String projectType,
     required String stepTitle,
     required String fieldLabel,
     Map<String, dynamic>? previousAnswers,
+    int? maxLength,
   }) async {
     String contextInfo = '';
     if (previousAnswers != null && previousAnswers.isNotEmpty) {
@@ -129,20 +137,27 @@ Retorne apenas o texto melhorado, sem explicações adicionais.
       });
     }
 
+    String lengthConstraint = '';
+    if (maxLength != null) {
+      lengthConstraint = '\nIMPORTANTE: Este campo tem limite de $maxLength caracteres.';
+    }
+
     String prompt =
         '''
-Você é um assistente especializado em formulários corporativos.
+Você é um assistente amigável que ajuda funcionários a preencher formulários corporativos.
 
 Contexto:
 - Projeto: $projectType
 - Etapa: $stepTitle
 - Campo: $fieldLabel
-$contextInfo
+$contextInfo$lengthConstraint
 
 Forneça 3 sugestões específicas e práticas para este campo. Cada sugestão deve ser:
 1. Profissional e corporativa
 2. Específica para o contexto
 3. Útil e acionável
+4. Respeitar o limite de caracteres (se aplicável)
+5. Concisas (máximo 2-3 linhas cada)
 
 Retorne apenas as 3 sugestões, uma por linha, sem numeração.
 ''';

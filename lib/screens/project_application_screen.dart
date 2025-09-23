@@ -15,7 +15,7 @@ class ProjectApplicationScreen extends StatefulWidget {
   final ApplicationMode applicationMode;
 
   const ProjectApplicationScreen({
-    super.key, 
+    super.key,
     required this.projectId,
     this.applicationMode = ApplicationMode.manual,
   });
@@ -31,17 +31,17 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   int _currentStep = 0;
   final Map<String, dynamic> _formData = {};
   final Map<String, GlobalKey<FormState>> _formKeys = {};
-  
-  // Estados para IA e áudio
-  bool _isLoadingAI = false;
-  
+
+  // Estados para animações mágicas
+  bool _showMagicLoading = false;
+
   // Estados para speech-to-text
   final SpeechToText _speechToText = SpeechToText();
   final Map<String, bool> _isListeningByField = {};
   final Map<String, String> _recognizedTextByField = {};
   final Map<String, double> _confidenceByField = {};
   final Map<String, Timer?> _silenceTimers = {};
-  
+
   // Estados para animação de digitação
   final Map<String, TextEditingController> _textControllers = {};
   final Map<String, bool> _isTypingAnimation = {};
@@ -57,18 +57,21 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     for (int i = 0; i < _project.steps.length; i++) {
       _formKeys['step_$i'] = GlobalKey<FormState>();
     }
-    
+
     // Initialize text controllers for each field
     for (final step in _project.steps) {
       for (final field in step.fields) {
-        if (field.type == model.FieldType.text || field.type == model.FieldType.textArea) {
-          _textControllers[field.id] = TextEditingController(text: _formData[field.id] ?? '');
+        if (field.type == model.FieldType.text ||
+            field.type == model.FieldType.textArea) {
+          _textControllers[field.id] = TextEditingController(
+            text: _formData[field.id] ?? '',
+          );
           _isTypingAnimation[field.id] = false;
           _typingText[field.id] = '';
         }
       }
     }
-    
+
     // Initialize speech-to-text
     _initSpeech();
   }
@@ -103,24 +106,30 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           onPressed: () => _showExitDialog(),
         ),
       ),
-      body: Column(
+      body: Stack(
         children: [
-          _buildProgressBar(),
-          Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentStep = index;
-                });
-              },
-              itemCount: _project.steps.length,
-              itemBuilder: (context, index) {
-                return _buildStepContent(index);
-              },
-            ),
+          Column(
+            children: [
+              _buildProgressBar(),
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentStep = index;
+                    });
+                  },
+                  itemCount: _project.steps.length,
+                  itemBuilder: (context, index) {
+                    return _buildStepContent(index);
+                  },
+                ),
+              ),
+              _buildNavigationButtons(),
+            ],
           ),
-          _buildNavigationButtons(),
+          // Overlay de loading mágico
+          _buildMagicLoadingOverlay(),
         ],
       ),
     );
@@ -153,30 +162,12 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
               LinearProgressIndicator(
                 value: (_currentStep + 1) / _project.steps.length,
                 backgroundColor: Colors.grey[300],
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.darkOrange),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppColors.darkOrange,
+                ),
                 minHeight: 20,
                 borderRadius: BorderRadius.all(Radius.circular(30)),
               ),
-              if (_isLoadingAI)
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: AppColors.darkOrange,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(3),
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
         ],
@@ -214,6 +205,188 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     );
   }
 
+  // Método para animação de digitação
+  Future<void> _typeTextAnimation(String fieldId, String text) async {
+    setState(() {
+      _isTypingAnimation[fieldId] = true;
+      _typingText[fieldId] = '';
+    });
+
+    for (int i = 0; i <= text.length; i++) {
+      if (!_isTypingAnimation[fieldId]!) break;
+      
+      setState(() {
+        _typingText[fieldId] = text.substring(0, i);
+      });
+      
+      // Atualizar o controller do campo
+      if (_textControllers.containsKey(fieldId)) {
+        _textControllers[fieldId]!.text = _typingText[fieldId]!;
+        _formData[fieldId] = _typingText[fieldId]!;
+      }
+      
+      await Future.delayed(const Duration(milliseconds: 10));
+    }
+
+    setState(() {
+      _isTypingAnimation[fieldId] = false;
+    });
+  }
+
+  // Widget para animação mágica de loading
+  Widget _buildMagicLoadingOverlay() {
+    if (!_showMagicLoading) return const SizedBox.shrink();
+    
+    return Container(
+      color: Colors.black.withValues(alpha: 0.3),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Ícone mágico animado
+              TweenAnimationBuilder<double>(
+                duration: const Duration(seconds: 2),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Transform.rotate(
+                    angle: value * 2 * 3.14159,
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.darkOrange,
+                            AppColors.darkOrange.withValues(alpha: 0.7),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.darkOrange.withValues(alpha: 0.3),
+                            blurRadius: 15,
+                            spreadRadius: 3,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.auto_awesome,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              // Texto animado
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 1500),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: const Text(
+                      'IA trabalhando...',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.darkOrange,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+              // Indicador de progresso
+              SizedBox(
+                width: 200,
+                child: LinearProgressIndicator(
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.darkOrange),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Verifica se o campo deve ter o botão da IA
+  bool _shouldShowAIButton(model.FormField field) {
+    // Apenas campos de texto e textArea podem ter IA
+    if (field.type != model.FieldType.text && field.type != model.FieldType.textArea) {
+      return false;
+    }
+
+    // Lista de campos que não devem ter IA (informações pessoais e campos específicos)
+    final excludedFields = [
+      'cargo_unidade',
+      'publico_beneficiado',
+      'duracao_periodicidade',
+      'stack_tecnologia',
+      'aplicabilidade_trl',
+      'tema_desafio',
+      'tema_imersao',
+      'tema_multiplicar',
+      'area_cientifica',
+      'tipo_ideia',
+      'tema_curso',
+      'tema_talk',
+      'tipo_evento',
+      'formato',
+      'duracao_formato',
+    ];
+
+    // Verifica se o campo está na lista de exclusão
+    if (excludedFields.contains(field.id)) {
+      return false;
+    }
+
+    // Verifica se o label contém palavras que indicam informações pessoais
+    final personalInfoKeywords = [
+      'cargo',
+      'unidade',
+      'nome',
+      'email',
+      'telefone',
+      'endereço',
+      'cpf',
+      'rg',
+      'matrícula',
+      'funcionário',
+      'colaborador',
+      'pessoa',
+      'individual',
+    ];
+
+    final labelLower = field.label.toLowerCase();
+    for (final keyword in personalInfoKeywords) {
+      if (labelLower.contains(keyword)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   Widget _buildFormField(model.FormField field) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
@@ -225,9 +398,15 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
               Expanded(
                 child: Text(
                   '${field.label}${field.isRequired ? ' *' : ''}',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
+              // Botão da IA como lanterna no canto superior direito
+              if (widget.applicationMode == ApplicationMode.aiAssisted && _shouldShowAIButton(field))
+                _buildAIFlashlightButton(field),
             ],
           ),
           const SizedBox(height: 8),
@@ -244,10 +423,16 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           children: [
             TextFormField(
               controller: _textControllers[field.id],
-              onChanged: (value) => _formData[field.id] = value,
+              onChanged: (value) {
+                _formData[field.id] = value;
+                // Forçar rebuild para atualizar o botão da IA
+                setState(() {});
+              },
               decoration: InputDecoration(
                 hintText: field.placeholder,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(color: AppColors.blue),
@@ -272,12 +457,18 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           children: [
             TextFormField(
               controller: _textControllers[field.id],
-              onChanged: (value) => _formData[field.id] = value,
+              onChanged: (value) {
+                _formData[field.id] = value;
+                // Forçar rebuild para atualizar o botão da IA
+                setState(() {});
+              },
               maxLines: 4,
               maxLength: field.maxLength,
               decoration: InputDecoration(
                 hintText: field.placeholder,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
                   borderSide: const BorderSide(color: AppColors.blue),
@@ -431,6 +622,9 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
                 style: OutlinedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   side: const BorderSide(color: AppColors.black),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                 ),
                 child: const Text(
                   'Voltar',
@@ -546,81 +740,57 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     );
   }
 
-  // Método para animação de digitação
-  Future<void> _typeTextAnimation(String fieldId, String text) async {
-    if (!_textControllers.containsKey(fieldId)) return;
-    
-    setState(() {
-      _isTypingAnimation[fieldId] = true;
-      _typingText[fieldId] = '';
-    });
-    
-    final controller = _textControllers[fieldId]!;
-    controller.clear();
-    
-    for (int i = 0; i <= text.length; i++) {
-      if (!_isTypingAnimation[fieldId]!) break; // Cancelar se necessário
-      
-      final currentText = text.substring(0, i);
-      controller.text = currentText;
-      _formData[fieldId] = currentText;
-      
-      await Future.delayed(const Duration(milliseconds: 30));
-    }
-    
-    setState(() {
-      _isTypingAnimation[fieldId] = false;
-    });
-  }
-
   // Métodos para IA
   Future<void> _getAISuggestions(model.FormField field) async {
     if (widget.applicationMode != ApplicationMode.aiAssisted) return;
 
+    // Mostrar animação mágica
     setState(() {
-      _isLoadingAI = true;
+      _showMagicLoading = true;
     });
 
     try {
-      // Gerar sugestão específica para o campo
-      final suggestion = await GroqService.generateText(
-        prompt: '''
-Você é um assistente especializado em ajudar funcionários a preencher formulários de aplicação para projetos corporativos.
-
-Contexto:
-- Projeto: ${_project.projectName}
-- Etapa: ${_project.steps[_currentStep].title}
-- Campo: ${field.label}
-${_formData.isNotEmpty ? '- Informações já preenchidas: ${_formData.entries.map((e) => '${e.key}: ${e.value}').join(', ')}' : ''}
-
-Por favor, forneça uma sugestão específica e profissional para este campo. Seja direto e prático, fornecendo um texto que pode ser usado diretamente no campo.
-
-Retorne apenas o texto sugerido, sem explicações adicionais.
-''',
-        maxTokens: 200,
-        temperature: 0.6,
+      // Gerar sugestões rápidas para o campo
+      final suggestions = await GroqService.generateQuickSuggestions(
+        projectType: _project.projectName,
+        stepTitle: _project.steps[_currentStep].title,
+        fieldLabel: field.label,
+        previousAnswers: _formData.isNotEmpty ? _formData : null,
+        maxLength: field.maxLength,
       );
 
+      await Future.delayed(const Duration(milliseconds: 1000));
+
+      // Esconder animação mágica
       setState(() {
-        _isLoadingAI = false;
+        _showMagicLoading = false;
       });
 
-      // Aplicar sugestão com animação de digitação
-      await _typeTextAnimation(field.id, suggestion.replaceAll('"', '').trim());
-      
+      // Fechar o teclado primeiro
+      FocusScope.of(context).unfocus();
+
+      // Aguardar um pouco para o teclado fechar completamente
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // Verificar se o widget ainda está montado antes de mostrar o diálogo
+      if (mounted) {
+        // Mostrar sugestões em um balão
+        _showAISuggestionsTooltip(field, suggestions);
+      }
     } catch (e) {
       setState(() {
-        _isLoadingAI = false;
+        _showMagicLoading = false;
       });
-      _showErrorDialog('Erro ao obter sugestão da IA: $e');
+      _showErrorDialog('Erro ao obter sugestões da IA: $e');
     }
   }
 
   Future<void> _improveTextWithAI(String fieldId, String currentText) async {
     if (widget.applicationMode != ApplicationMode.aiAssisted) return;
 
+    // Mostrar animação mágica
     setState(() {
-      _isLoadingAI = true;
+      _showMagicLoading = true;
     });
 
     try {
@@ -632,18 +802,28 @@ Retorne apenas o texto sugerido, sem explicações adicionais.
         originalText: currentText,
         fieldLabel: field.label,
         projectType: _project.projectName,
+        maxLength: field.maxLength,
       );
 
+      // Esconder animação mágica
       setState(() {
-        _isLoadingAI = false;
+        _showMagicLoading = false;
       });
 
-      // Aplicar texto melhorado com animação de digitação
-      await _typeTextAnimation(fieldId, improvedText.trim());
-      
+      // Fechar o teclado primeiro
+      FocusScope.of(context).unfocus();
+
+      // Aguardar um pouco para o teclado fechar completamente
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // Verificar se o widget ainda está montado antes de mostrar o diálogo
+      if (mounted) {
+        // Mostrar card de melhoria
+        _showTextImprovementCard(field, currentText, improvedText.trim());
+      }
     } catch (e) {
       setState(() {
-        _isLoadingAI = false;
+        _showMagicLoading = false;
       });
       _showErrorDialog('Erro ao melhorar texto: $e');
     }
@@ -665,6 +845,418 @@ Retorne apenas o texto sugerido, sem explicações adicionais.
     );
   }
 
+  void _showAISuggestionsTooltip(
+    model.FormField field,
+    List<String> suggestions,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.transparent,
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          constraints: const BoxConstraints(maxWidth: 400),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.darkOrange.withValues(alpha: 0.1),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.darkOrange,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.auto_awesome,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Sugestões da IA',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.darkOrange,
+                            ),
+                          ),
+                          Text(
+                            'Campo: ${field.label}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, size: 20),
+                      color: Colors.grey[600],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Sugestões
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: suggestions.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final suggestion = entry.value;
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            Navigator.pop(context);
+                            _applySuggestion(field.id, suggestion);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[200]!),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color: AppColors.darkOrange.withValues(
+                                      alpha: 0.1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      '${index + 1}',
+                                      style: const TextStyle(
+                                        color: AppColors.darkOrange,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    suggestion,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
+                                  color: Colors.grey[400],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+
+              // Footer
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.grey[600], size: 16),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Toque em uma sugestão para preencher o campo',
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _applySuggestion(String fieldId, String suggestion) {
+    if (_textControllers.containsKey(fieldId)) {
+      // Usar animação de digitação
+      _typeTextAnimation(fieldId, suggestion);
+    }
+  }
+
+  void _showTextImprovementCard(
+    model.FormField field,
+    String originalText,
+    String improvedText,
+  ) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: Colors.transparent,
+        contentPadding: EdgeInsets.zero,
+        content: Container(
+          constraints: const BoxConstraints(maxWidth: 400),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.darkOrange.withValues(alpha: 0.1),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.darkOrange,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.auto_fix_high,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Melhoria de Texto',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.darkOrange,
+                            ),
+                          ),
+                          Text(
+                            'Campo: ${field.label}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, size: 20),
+                      color: Colors.grey[600],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Conteúdo
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    // Texto original
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.red[50],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red[200]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.edit,
+                                color: Colors.red[600],
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Texto atual:',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.red[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            originalText,
+                            style: const TextStyle(fontSize: 14, height: 1.3),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Texto melhorado
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.green[50],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green[200]!),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.auto_awesome,
+                                color: Colors.green[600],
+                                size: 16,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Sugestão melhorada:',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            improvedText,
+                            style: const TextStyle(fontSize: 14, height: 1.3),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Botões de ação
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(16),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          side: BorderSide(color: Colors.grey[400]!),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text(
+                          'Manter original',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _applySuggestion(field.id, improvedText);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.darkOrange,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Aplicar melhoria'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // Métodos para speech-to-text
   void _initSpeech() async {
     await _speechToText.initialize();
@@ -680,9 +1272,46 @@ Retorne apenas o texto sugerido, sem explicações adicionais.
     });
   }
 
+  Widget _buildAIFlashlightButton(model.FormField field) {
+    final isEmpty = (_formData[field.id] ?? '').isEmpty;
+
+    return Container(
+      margin: const EdgeInsets.only(left: 8),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: () {
+            if (isEmpty) {
+              _getAISuggestions(field);
+            } else {
+              _improveTextWithAI(field.id, _formData[field.id] ?? '');
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppColors.darkOrange,
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: AppColors.darkOrange,
+                width: 1,
+              ),
+            ),
+            child: Icon(
+              isEmpty ? Icons.auto_awesome : Icons.auto_fix_high,
+              size: 20,
+              color: AppColors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget? _buildSuffixIcons(model.FormField field) {
     List<Widget> icons = [];
-    
+
     // Botão de microfone para modo áudio
     if (widget.applicationMode == ApplicationMode.audio) {
       final isListening = _isListeningByField[field.id] ?? false;
@@ -704,48 +1333,16 @@ Retorne apenas o texto sugerido, sem explicações adicionais.
         ),
       );
     }
-    
-    // Botões de IA para modo assistido
-    if (widget.applicationMode == ApplicationMode.aiAssisted) {
-      if ((_formData[field.id] ?? '').isEmpty) {
-        icons.add(
-          IconButton(
-            icon: _isLoadingAI 
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.psychology, size: 20),
-            onPressed: _isLoadingAI ? null : () => _getAISuggestions(field),
-            tooltip: 'Obter ajuda da IA',
-          ),
-        );
-      }
-      if ((_formData[field.id] ?? '').isNotEmpty) {
-        icons.add(
-          IconButton(
-            icon: _isLoadingAI 
-                ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.auto_fix_high, size: 20),
-            onPressed: _isLoadingAI ? null : () => _improveTextWithAI(field.id, _formData[field.id] ?? ''),
-            tooltip: 'Melhorar com IA',
-          ),
-        );
-      }
-    }
-    
-    return icons.isNotEmpty ? Row(mainAxisSize: MainAxisSize.min, children: icons) : null;
+
+    return icons.isNotEmpty
+        ? Row(mainAxisSize: MainAxisSize.min, children: icons)
+        : null;
   }
 
   void _listenToSpeech(model.FormField field) async {
     final fieldId = field.id;
     final isCurrentlyListening = _isListeningByField[fieldId] ?? false;
-    
+
     if (!isCurrentlyListening) {
       bool available = await _speechToText.initialize(
         onStatus: (status) => print('onStatus: $status'),
@@ -757,24 +1354,25 @@ Retorne apenas o texto sugerido, sem explicações adicionais.
           _recognizedTextByField[fieldId] = '';
           _confidenceByField[fieldId] = 1.0;
         });
-        
+
         // Iniciar timer de silêncio
         _startSilenceTimer(fieldId);
-        
+
         _speechToText.listen(
           onResult: (result) {
             // Resetar timer a cada resultado (nova fala detectada)
             _resetSilenceTimer(fieldId);
-            
+
             setState(() {
               _recognizedTextByField[fieldId] = result.recognizedWords;
               if (result.hasConfidenceRating && result.confidence > 0) {
                 _confidenceByField[fieldId] = result.confidence;
               }
-              
+
               // Atualizar o campo de input em tempo real
               if (_textControllers.containsKey(fieldId)) {
-                _textControllers[fieldId]!.text = _recognizedTextByField[fieldId]!;
+                _textControllers[fieldId]!.text =
+                    _recognizedTextByField[fieldId]!;
                 _formData[fieldId] = _recognizedTextByField[fieldId]!;
               }
             });
@@ -798,7 +1396,6 @@ Retorne apenas o texto sugerido, sem explicações adicionais.
     _silenceTimers[fieldId]?.cancel();
     _startSilenceTimer(fieldId);
   }
-
 }
 
 class ApplicationSuccessScreen extends StatelessWidget {
