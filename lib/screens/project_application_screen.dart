@@ -214,17 +214,17 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
 
     for (int i = 0; i <= text.length; i++) {
       if (!_isTypingAnimation[fieldId]!) break;
-      
+
       setState(() {
         _typingText[fieldId] = text.substring(0, i);
       });
-      
+
       // Atualizar o controller do campo
       if (_textControllers.containsKey(fieldId)) {
         _textControllers[fieldId]!.text = _typingText[fieldId]!;
         _formData[fieldId] = _typingText[fieldId]!;
       }
-      
+
       await Future.delayed(const Duration(milliseconds: 10));
     }
 
@@ -236,7 +236,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   // Widget para animação mágica de loading
   Widget _buildMagicLoadingOverlay() {
     if (!_showMagicLoading) return const SizedBox.shrink();
-    
+
     return Container(
       color: Colors.black.withValues(alpha: 0.3),
       child: Center(
@@ -318,7 +318,9 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
                 width: 200,
                 child: LinearProgressIndicator(
                   backgroundColor: Colors.grey[300],
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.darkOrange),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.darkOrange,
+                  ),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -332,7 +334,8 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   // Verifica se o campo deve ter o botão da IA
   bool _shouldShowAIButton(model.FormField field) {
     // Apenas campos de texto e textArea podem ter IA
-    if (field.type != model.FieldType.text && field.type != model.FieldType.textArea) {
+    if (field.type != model.FieldType.text &&
+        field.type != model.FieldType.textArea) {
       return false;
     }
 
@@ -405,7 +408,8 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
                 ),
               ),
               // Botão da IA como lanterna no canto superior direito
-              if (widget.applicationMode == ApplicationMode.aiAssisted && _shouldShowAIButton(field))
+              if (widget.applicationMode == ApplicationMode.aiAssisted &&
+                  _shouldShowAIButton(field))
                 _buildAIFlashlightButton(field),
             ],
           ),
@@ -819,7 +823,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
       // Verificar se o widget ainda está montado antes de mostrar o diálogo
       if (mounted) {
         // Mostrar card de melhoria
-        _showTextImprovementCard(field, currentText, improvedText.trim());
+        _showTextImprovementCard(field, currentText, improvedText.trim().replaceAll('"', ''));
       }
     } catch (e) {
       setState(() {
@@ -1277,34 +1281,26 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
 
     return Container(
       margin: const EdgeInsets.only(left: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(24),
-          onTap: () {
-            if (isEmpty) {
-              _getAISuggestions(field);
-            } else {
-              _improveTextWithAI(field.id, _formData[field.id] ?? '');
-            }
-          },
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.darkOrange,
-              borderRadius: BorderRadius.circular(15),
-              border: Border.all(
-                color: AppColors.darkOrange,
-                width: 1,
-              ),
-            ),
-            child: Icon(
-              isEmpty ? Icons.auto_awesome : Icons.auto_fix_high,
-              size: 20,
-              color: AppColors.white,
-            ),
+      child: IconButton(
+        style: IconButton.styleFrom(
+          backgroundColor: AppColors.darkOrange,
+          foregroundColor: AppColors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: AppColors.darkOrange),
           ),
         ),
+        icon: Icon(
+          isEmpty ? Icons.auto_awesome : Icons.auto_fix_high,
+          size: 20,
+        ),
+        onPressed: () {
+          if (isEmpty) {
+            _getAISuggestions(field);
+          } else {
+            _improveTextWithAI(field.id, _formData[field.id] ?? '');
+          }
+        },
       ),
     );
   }
