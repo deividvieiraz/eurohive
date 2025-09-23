@@ -152,14 +152,14 @@ Contexto:
 - Campo: $fieldLabel
 $contextInfo$lengthConstraint
 
-Forneça 3 sugestões específicas e práticas para este campo. Cada sugestão deve ser:
+Forneça EXATAMENTE 3 sugestões específicas e práticas para este campo. Cada sugestão deve ser:
 1. Profissional e corporativa
 2. Específica para o contexto
 3. Útil e acionável
 4. Respeitar o limite de caracteres (se aplicável)
 5. Concisas (máximo 2-3 linhas cada)
 
-Retorne apenas as 3 sugestões, uma por linha, sem numeração.
+IMPORTANTE: Retorne APENAS as 3 sugestões, uma por linha, sem numeração, sem introdução, sem explicações adicionais. Comece diretamente com a primeira sugestão.
 ''';
 
     final response = await generateText(
@@ -168,10 +168,119 @@ Retorne apenas as 3 sugestões, uma por linha, sem numeração.
       temperature: 0.7,
     );
 
-    return response
-        .split('\n')
-        .where((line) => line.trim().isNotEmpty)
-        .take(3)
-        .toList();
+    // Processar a resposta para extrair apenas as sugestões válidas
+    List<String> suggestions = _parseSuggestions(response);
+    
+    // Se não conseguimos 3 sugestões válidas, gerar novamente com prompt mais específico
+    if (suggestions.length < 3) {
+      final retryResponse = await generateText(
+        prompt: '''
+Para o campo "$fieldLabel" no projeto "$projectType", forneça 3 sugestões práticas e profissionais.
+Retorne APENAS as sugestões, uma por linha, sem numeração ou texto adicional.
+
+Sugestão 1:
+Sugestão 2:
+Sugestão 3:
+''',
+        maxTokens: 150,
+        temperature: 0.5,
+      );
+      
+      suggestions = _parseSuggestions(retryResponse);
+    }
+    
+    // Garantir que temos pelo menos 3 sugestões
+    while (suggestions.length < 3) {
+      suggestions.add('Sugestão ${suggestions.length + 1} para $fieldLabel');
+    }
+    
+    return suggestions.take(3).toList();
+  }
+
+  // Método auxiliar para processar e filtrar sugestões da IA
+  static List<String> _parseSuggestions(String response) {
+    List<String> lines = response.split('\n');
+    List<String> suggestions = [];
+    
+    // Palavras que indicam texto explicativo (não sugestões)
+    List<String> excludePatterns = [
+      'aqui estão',
+      'aqui estao',
+      'segue',
+      'sugestões',
+      'sugestoes',
+      'sugestão',
+      'sugestao',
+      'opções',
+      'opcoes',
+      'opção',
+      'opcao',
+      'para o campo',
+      'campo:',
+      'contexto:',
+      'projeto:',
+      'etapa:',
+      'importante:',
+      'retorne',
+      'forneça',
+      'forneca',
+      'cada sugestão',
+      'cada sugestao',
+      'deve ser',
+      'profissional',
+      'corporativa',
+      'específica',
+      'especifica',
+      'útil',
+      'util',
+      'acionável',
+      'acionavel',
+      'concisas',
+      'máximo',
+      'maximo',
+      'linhas',
+      'caracteres',
+      'limite',
+      'respeitar',
+      'tom',
+      'clareza',
+      'objetividade',
+      'relevância',
+      'relevancia',
+    ];
+    
+    for (String line in lines) {
+      String trimmedLine = line.trim();
+      
+      // Pular linhas vazias
+      if (trimmedLine.isEmpty) continue;
+      
+      // Pular linhas que começam com números (numeração)
+      if (RegExp(r'^\d+[\.\)]\s*').hasMatch(trimmedLine)) {
+        trimmedLine = trimmedLine.replaceFirst(RegExp(r'^\d+[\.\)]\s*'), '').trim();
+      }
+      
+      // Pular linhas que contêm texto explicativo
+      bool isExplanatory = false;
+      for (String pattern in excludePatterns) {
+        if (trimmedLine.toLowerCase().contains(pattern.toLowerCase())) {
+          isExplanatory = true;
+          break;
+        }
+      }
+      
+      // Pular linhas muito curtas (provavelmente não são sugestões)
+      if (trimmedLine.length < 10) continue;
+      
+      // Pular linhas que são apenas pontuação ou símbolos
+      if (RegExp(r'^[^\w\s]+$').hasMatch(trimmedLine)) continue;
+      
+      // Se não é explicativo e tem conteúdo suficiente, é uma sugestão válida
+      if (!isExplanatory && trimmedLine.isNotEmpty) {
+        suggestions.add(trimmedLine);
+      }
+    }
+    
+    return suggestions;
   }
 }
