@@ -107,9 +107,10 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Widget _buildFilterButton(String label, FeedFilter filter) {
-    final bool isSelected = _selectedFilter == filter;
+  final bool isSelected = _selectedFilter == filter;
 
-    return TextButton(
+  return Flexible(
+    child: TextButton(
       onPressed: () {
         setState(() {
           _selectedFilter = filter;
@@ -122,17 +123,22 @@ class _FeedScreenState extends State<FeedScreen> {
               ? const Border(bottom: BorderSide(color: Colors.white, width: 2))
               : null,
         ),
-        child: Text(
-          label,
-          style: TextStyle(
-            color: AppColors.white,
-            fontSize: 18,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            style: TextStyle(
+              color: AppColors.white,
+              fontSize: 18,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   Widget _buildCreatePostSection() {
     return Container(
