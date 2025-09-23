@@ -34,7 +34,7 @@ final List<Post> demoPosts = [
     content: 'Expansão fortalece nossa produção e geração de empregos.',
     imagePath: AppAssets.news1,
     likes: 12,
-    comments: 3,
+    comments: 4,
     shares: 2,
   ),
   Post(
@@ -52,7 +52,7 @@ final List<Post> demoPosts = [
     time: '1d',
     content: 'Estudo pioneiro avança no tratamento de doenças crônicas.',
     imagePath: AppAssets.news3,
-    likes: 15,
+    likes: 20,
     comments: 4,
     shares: 3,
   ),
