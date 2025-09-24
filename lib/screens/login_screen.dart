@@ -4,6 +4,7 @@ import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/core/constants/app_texts.dart';
 import 'package:eurohive/screens/main_screen.dart';
+import 'package:eurohive/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -15,7 +16,114 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool obscurePassword = true;
-  bool rememberMe = false;
+  bool rememberMe = true; // Padrão ligado
+  bool isLoading = false;
+  
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Carrega o estado de forma assíncrona, mas mantém o padrão true
+    _loadRememberMeState();
+  }
+
+  @override
+  void dispose() {
+    _usernameController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadRememberMeState() async {
+    try {
+      // Só carrega o estado se já foi definido pelo usuário
+      final hasBeenSet = await AuthService.hasRememberMeBeenSet();
+      if (hasBeenSet) {
+        final rememberMeState = await AuthService.isRememberMeEnabled();
+        setState(() {
+          rememberMe = rememberMeState;
+        });
+      }
+      // Se não foi definido, mantém o padrão true
+    } catch (e) {
+      // Se houver erro, mantém o padrão true
+    }
+  }
+
+  Future<void> _handleLogin() async {
+    if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
+      _showErrorDialog('Por favor, preencha todos os campos');
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final success = await AuthService.login(
+        _usernameController.text.trim(),
+        _passwordController.text.trim(),
+        rememberMe: rememberMe,
+      );
+
+      if (success) {
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(1.0, 0.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
+                
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                var offsetAnimation = animation.drive(tween);
+                
+                return SlideTransition(
+                  position: offsetAnimation,
+                  child: FadeTransition(
+                    opacity: animation,
+                    child: child,
+                  ),
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 500),
+            ),
+          );
+        }
+      } else {
+        _showErrorDialog('Usuário ou senha incorretos');
+      }
+    } catch (e) {
+      _showErrorDialog('Erro ao fazer login. Tente novamente.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Erro'),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 20),
                           TextField(
+                            controller: _usernameController,
                             decoration: const InputDecoration(
                               hintText: AppTexts.provideEmail,
                               hintStyle: TextStyle(color: AppColors.darkGray),
@@ -80,6 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 16),
 
                           TextField(
+                            controller: _passwordController,
                             obscureText: obscurePassword,
                             decoration: InputDecoration(
                               hintText: AppTexts.providePassword,
@@ -113,8 +223,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 children: [
                                   Checkbox(
                                     value: rememberMe,
-                                    onChanged: (value) {
+                                    onChanged: (value) async {
                                       setState(() => rememberMe = value!);
+                                      await AuthService.setRememberMe(value!);
                                     },
                                     activeColor: AppColors.lightBlue,
                                   ),
@@ -142,41 +253,26 @@ class _LoginScreenState extends State<LoginScreen> {
                             width: double.infinity,
                             height: 48,
                             child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation, secondaryAnimation) => const MainScreen(),
-                                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                                      const begin = Offset(1.0, 0.0);
-                                      const end = Offset.zero;
-                                      const curve = Curves.easeInOut;
-                                      
-                                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                                      var offsetAnimation = animation.drive(tween);
-                                      
-                                      return SlideTransition(
-                                        position: offsetAnimation,
-                                        child: FadeTransition(
-                                          opacity: animation,
-                                          child: child,
-                                        ),
-                                      );
-                                    },
-                                    transitionDuration: const Duration(milliseconds: 500),
-                                  ),
-                                );
-                              },
+                              onPressed: isLoading ? null : _handleLogin,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.blue,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: const Text(
-                                AppTexts.login,
-                                style: TextStyle(color: AppColors.white),
-                              ),
+                              child: isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: AppColors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      AppTexts.login,
+                                      style: TextStyle(color: AppColors.white),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 16),

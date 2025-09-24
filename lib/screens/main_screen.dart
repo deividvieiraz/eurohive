@@ -1,9 +1,11 @@
 import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
+import 'package:eurohive/routes/app_routes.dart';
 import 'package:eurohive/screens/discovery_screen.dart';
 import 'package:eurohive/screens/feed_screen.dart';
 import 'package:eurohive/screens/home_screen.dart';
 import 'package:eurohive/screens/profile_screen.dart';
+import 'package:eurohive/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {
@@ -34,6 +36,39 @@ class _MainScreenState extends State<MainScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleLogout() async {
+    // Mostra um diálogo de confirmação
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar Logout'),
+        content: const Text('Tem certeza que deseja sair?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await AuthService.logout();
+      
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.login,
+          (route) => false,
+        );
+      }
+    }
   }
 
   @override
@@ -221,9 +256,9 @@ class _MainScreenState extends State<MainScreen> {
           ListTile(
             leading: const Icon(Icons.logout),
             title: const Text('Sair'),
-            onTap: () {
+            onTap: () async {
               Navigator.pop(context);
-              // Implementar logout
+              await _handleLogout();
             },
           ),
         ],

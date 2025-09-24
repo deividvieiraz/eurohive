@@ -1,6 +1,7 @@
 import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/theme/app_theme.dart';
 import 'package:eurohive/routes/app_routes.dart';
+import 'package:eurohive/services/auth_service.dart';
 import 'package:eurohive/services/onboarding_service.dart';
 import 'package:flutter/material.dart';
 
@@ -82,14 +83,14 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(seconds: 3));
     
     final hasSeenOnboarding = await OnboardingService.hasSeenOnboarding();
-    print('SplashScreen: hasSeenOnboarding = $hasSeenOnboarding');
+    final isLoggedIn = await AuthService.isLoggedIn();
     
     if (mounted) {
-      if (hasSeenOnboarding) {
-        print('SplashScreen: Navigating to login with fade out');
+      if (isLoggedIn) {
+        await _navigateWithFadeOut(AppRoutes.main);
+      } else if (hasSeenOnboarding) {
         await _navigateWithFadeOut(AppRoutes.login);
       } else {
-        print('SplashScreen: Navigating to onboarding with fade out');
         await _navigateWithFadeOut(AppRoutes.onboarding);
       }
     }
