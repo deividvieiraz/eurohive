@@ -16,9 +16,27 @@ class AppRoutes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
       case onboarding:
-        return MaterialPageRoute(builder: (_) => const OnboardingScreen());
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const OnboardingScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 500),
+        );
       case login:
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
+        return PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 500),
+        );
       case main:
         return MaterialPageRoute(builder: (_) => const MainScreen());
       case profile:

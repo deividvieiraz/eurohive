@@ -3,9 +3,7 @@ import 'dart:ui';
 import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/core/constants/app_texts.dart';
-import 'package:eurohive/routes/app_routes.dart';
 import 'package:eurohive/screens/main_screen.dart';
-import 'package:eurohive/services/onboarding_service.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {

@@ -73,7 +73,9 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     }
 
     // Initialize speech-to-text
-    _initSpeech();
+    if (widget.applicationMode == ApplicationMode.audio) {
+      _initSpeech();
+    }
   }
 
   @override
