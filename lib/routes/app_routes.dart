@@ -2,9 +2,12 @@ import 'package:eurohive/screens/login_screen.dart';
 import 'package:eurohive/screens/main_screen.dart';
 import 'package:eurohive/screens/profile_screen.dart';
 import 'package:eurohive/screens/application_method_choice_screen.dart';
+import 'package:eurohive/screens/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
+  static const splash = '/';
+  static const onboarding = '/onboarding';
   static const login = '/login';
   static const main = '/main';
   static const profile = '/profile';
@@ -12,6 +15,8 @@ class AppRoutes {
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case onboarding:
+        return MaterialPageRoute(builder: (_) => const OnboardingScreen());
       case login:
         return MaterialPageRoute(builder: (_) => const LoginScreen());
       case main:

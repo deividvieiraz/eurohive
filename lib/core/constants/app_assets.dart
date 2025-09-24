@@ -12,6 +12,12 @@ class AppAssets {
   static const news5 = 'assets/images/news5.jpg';
   static const news6 = 'assets/images/news6.jpg';
 
+  // GIFs
+  static const onBoard1 = 'assets/images/onboard_1.gif';
+  static const onBoard2 = 'assets/images/onboard_2.gif';
+  static const onBoard3 = 'assets/images/onboard_3.gif';
+  static const onBoard4 = 'assets/images/onboard_4.gif';
+
   // Icons
   static const homeIcon = 'assets/icons/home_ic.svg';
   static const peopleIcon = 'assets/icons/people_ic.svg';
