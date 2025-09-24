@@ -70,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             SizedBox(height: 8),
             Text(
-              'Descubra novas ideias e conecte-se com a rede de inovção Eurofarma',
+              'Descubra novas ideias e conecte-se com a rede de inovação Eurofarma',
               style: TextStyle(color: AppColors.black, fontSize: 16),
             ),
           ],
@@ -224,7 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
               color: color,
             ),
           ),
-          Text(title, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+          Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
         ],
       ),
     );

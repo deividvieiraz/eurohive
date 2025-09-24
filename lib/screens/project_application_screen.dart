@@ -579,41 +579,178 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   }
 
   Widget _buildReviewStep() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Revise suas informações:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header moderno
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppColors.darkOrange.withValues(alpha: 0.1), AppColors.darkOrange.withValues(alpha: 0.05)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.darkOrange.withValues(alpha: 0.2)),
             ),
-            const SizedBox(height: 16),
-            ..._formData.entries.map((entry) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: 120,
-                      child: Text(
-                        '${entry.key}:',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(entry.value?.toString() ?? 'Não informado'),
-                    ),
-                  ],
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.darkOrange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.checklist_rounded,
+                    color: AppColors.darkOrange,
+                    size: 28,
+                  ),
                 ),
-              );
-            }),
-          ],
-        ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Revisão Final',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Confirme todas as informações antes de enviar',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Lista de informações com design moderno
+          ..._formData.entries.map((entry) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 4,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.darkOrange,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          _formatFieldName(entry.key),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.black,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[200]!),
+                          ),
+                          child: Text(
+                            entry.value?.toString() ?? 'Não informado',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: entry.value?.toString().isNotEmpty == true 
+                                  ? AppColors.black 
+                                  : Colors.grey[500],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+          
+          const SizedBox(height: 24),
+          
+          // Card de resumo
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: AppColors.lightGray,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.darkOrange.withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  color: AppColors.darkOrange,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Todas as informações foram preenchidas corretamente. Você pode prosseguir com o envio da aplicação.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[700],
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  String _formatFieldName(String fieldName) {
+    // Converte snake_case para Title Case
+    return fieldName
+        .split('_')
+        .map((word) => word.isNotEmpty 
+            ? '${word[0].toUpperCase()}${word.substring(1)}' 
+            : '')
+        .join(' ');
   }
 
   Widget _buildNavigationButtons() {
@@ -1396,7 +1533,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   }
 }
 
-class ApplicationSuccessScreen extends StatelessWidget {
+class ApplicationSuccessScreen extends StatefulWidget {
   final String projectName;
   final String protocolNumber;
 
@@ -1407,55 +1544,164 @@ class ApplicationSuccessScreen extends StatelessWidget {
   });
 
   @override
+  State<ApplicationSuccessScreen> createState() => _ApplicationSuccessScreenState();
+}
+
+class _ApplicationSuccessScreenState extends State<ApplicationSuccessScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late AnimationController _pulseController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.elasticOut,
+    ));
+
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.1,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+
+    _animationController.forward();
+    _pulseController.repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.black,
-        foregroundColor: AppColors.white,
-        title: const Text('Aplicação Enviada'),
-        automaticallyImplyLeading: false,
-      ),
-      body: Center(
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: Colors.green.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check_circle,
-                  size: 80,
-                  color: Colors.green,
-                ),
+              const Spacer(),
+              
+              // Ícone animado de sucesso
+              AnimatedBuilder(
+                animation: Listenable.merge([_scaleAnimation, _pulseAnimation]),
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: _scaleAnimation.value * _pulseAnimation.value,
+                    child: Container(
+                      width: 140,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.green[400]!,
+                            Colors.green[600]!,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        size: 70,
+                        color: Colors.white,
+                      ),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: 32),
+              
+              const SizedBox(height: 40),
+              
+              // Título principal
               const Text(
-                'Aplicação Enviada com Sucesso!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                'Aplicação Enviada!',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.black,
+                ),
                 textAlign: TextAlign.center,
               ),
+              
               const SizedBox(height: 16),
+              
+              // Subtítulo
               Text(
-                'Sua aplicação para o projeto $projectName foi enviada com sucesso.',
-                style: const TextStyle(fontSize: 16, color: Colors.grey),
+                'Sua aplicação para o projeto foi enviada com sucesso',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  height: 1.4,
+                ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 32),
+              
+              const SizedBox(height: 40),
+              
+              // Card do protocolo com design moderno
               Container(
-                padding: const EdgeInsets.all(16),
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: AppColors.darkOrange.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.blue),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.grey[200]!),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.darkOrange.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.receipt_long_rounded,
+                        color: AppColors.darkOrange,
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     const Text(
                       'Número do Protocolo',
                       style: TextStyle(
@@ -1465,20 +1711,66 @@ class ApplicationSuccessScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      protocolNumber,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.black,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey[200]!),
+                      ),
+                      child: Text(
+                        widget.protocolNumber,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.black,
+                          letterSpacing: 1.2,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              
+              const SizedBox(height: 40),
+              
+              // Card de informações adicionais
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: AppColors.lightGray,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.darkOrange.withValues(alpha: 0.2)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      color: AppColors.darkOrange,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Você receberá uma confirmação por email em breve. Acompanhe o status da sua aplicação na área de projetos.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              const Spacer(),
+              
+              // Botão de ação principal
               SizedBox(
                 width: double.infinity,
+                height: 56,
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.pushReplacementNamed(context, AppRoutes.main);
@@ -1486,17 +1778,30 @@ class ApplicationSuccessScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.black,
                     foregroundColor: AppColors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(16),
                     ),
+                    shadowColor: Colors.transparent,
                   ),
-                  child: const Text(
-                    'Voltar ao Início',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.home_rounded, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Voltar ao Início',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
+              
+              const SizedBox(height: 16),
             ],
           ),
         ),
