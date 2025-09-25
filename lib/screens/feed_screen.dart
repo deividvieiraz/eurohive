@@ -351,15 +351,19 @@ class _FeedScreenState extends State<FeedScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildActionButton(
-                    icon: Icons.chat_bubble_outline,
-                    label: '${post.comments}',
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PostCommentsScreen(post: post),
-                        ),
-                      );
+                    icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
+                    label: '${post.likes}',
+                    iconColor: post.isLiked ? Colors.red : Colors.grey[600],
+                    onPressed: () {
+                      setState(() {
+                        if (!post.isLiked) {
+                          post.likes++;
+                          post.isLiked = true;
+                        } else {
+                          post.likes--;
+                          post.isLiked = false;
+                        }
+                      });
                     },
                   ),
                   _buildActionButton(
@@ -379,19 +383,15 @@ class _FeedScreenState extends State<FeedScreen> {
                     },
                   ),
                   _buildActionButton(
-                    icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
-                    label: '${post.likes}',
-                    iconColor: post.isLiked ? Colors.red : Colors.grey[600],
-                    onPressed: () {
-                      setState(() {
-                        if (!post.isLiked) {
-                          post.likes++;
-                          post.isLiked = true;
-                        } else {
-                          post.likes--;
-                          post.isLiked = false;
-                        }
-                      });
+                    icon: Icons.chat_bubble_outline,
+                    label: '${post.comments}',
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => PostCommentsScreen(post: post),
+                        ),
+                      );
                     },
                   ),
                   _buildActionButton(

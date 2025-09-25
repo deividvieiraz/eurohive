@@ -23,105 +23,107 @@ class _ApplicationMethodChoiceScreenState
   }
 
   Widget _buildBody() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 20),
-            const Text(
-              'Escolha sua jornada',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: AppColors.black,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Escolha o método que melhor se adapta ao seu estilo:',
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 40),
-        
-            // opções de seleção
-            Expanded(
-              child: Column(
-                children: [
-                  _buildSelectorButton(
-                    index: 0,
-                    label: 'Preenchimento Manual',
-                    onTap: () {
-                      setState(() {
-                        selectedIndex = 0;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  _buildSelectorButton(
-                    index: 1,
-                    label: 'Assistente de IA',
-                    onTap: () {
-                      setState(() {
-                        selectedIndex = 1;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  _buildSelectorButton(
-                    index: 2,
-                    label: 'Gravação de Áudio',
-                    onTap: () {
-                      setState(() {
-                        selectedIndex = 2;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-        
-            // botão Avançar embaixo
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: selectedIndex != null
-                    ? () {
-                        // lógica de navegação dependendo da opção selecionada
-                        switch (selectedIndex) {
-                          case 0:
-                            _navigateToManualApplication(context);
-                            break;
-                          case 1:
-                            _navigateToAIAssistedApplication(context);
-                            break;
-                          case 2:
-                            _navigateToAudioApplication(context);
-                            break;
-                        }
-                      }
-                    : null, // se nada estiver selecionado, desabilita
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: selectedIndex != null
-                      ? AppColors.black
-                      : Colors.grey,
-                  foregroundColor: AppColors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+    return Column(
+      children: [
+        // Conteúdo centralizado
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  'Escolha sua jornada',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.black,
                   ),
                 ),
-                child: const Text(
-                  'Avançar',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                const SizedBox(height: 8),
+                Text(
+                  'Escolha o método que melhor se adapta ao seu estilo:',
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
                 ),
-              ),
+                const SizedBox(height: 40),
+            
+                // opções de seleção
+                _buildSelectorButton(
+                  index: 0,
+                  label: 'Preenchimento Manual',
+                  onTap: () {
+                    setState(() {
+                      selectedIndex = 0;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+                _buildSelectorButton(
+                  index: 1,
+                  label: 'Impulsionar com IA',
+                  onTap: () {
+                    setState(() {
+                      selectedIndex = 1;
+                    });
+                  },
+                ),
+                const SizedBox(height: 20),
+                _buildSelectorButton(
+                  index: 2,
+                  label: 'Gravação de Áudio',
+                  onTap: () {
+                    setState(() {
+                      selectedIndex = 2;
+                    });
+                  },
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+        
+        // Botão Avançar separado na parte inferior
+        Padding(
+          padding: const EdgeInsets.all(24),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: selectedIndex != null
+                  ? () {
+                      // lógica de navegação dependendo da opção selecionada
+                      switch (selectedIndex) {
+                        case 0:
+                          _navigateToManualApplication(context);
+                          break;
+                        case 1:
+                          _navigateToAIAssistedApplication(context);
+                          break;
+                        case 2:
+                          _navigateToAudioApplication(context);
+                          break;
+                      }
+                    }
+                  : null, // se nada estiver selecionado, desabilita
+              style: ElevatedButton.styleFrom(
+                backgroundColor: selectedIndex != null
+                    ? AppColors.black
+                    : Colors.grey,
+                foregroundColor: AppColors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text(
+                'Avançar',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 

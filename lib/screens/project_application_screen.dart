@@ -7,7 +7,6 @@ import 'package:eurohive/services/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:speech_to_text/speech_to_text.dart';
-import 'package:avatar_glow/avatar_glow.dart';
 import 'dart:async';
 
 class ProjectApplicationScreen extends StatefulWidget {
@@ -25,7 +24,8 @@ class ProjectApplicationScreen extends StatefulWidget {
       _ProjectApplicationScreenState();
 }
 
-class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
+class _ProjectApplicationScreenState extends State<ProjectApplicationScreen>
+    with TickerProviderStateMixin {
   late PageController _pageController;
   late model.ProjectApplicationModel _project;
   int _currentStep = 0;
@@ -34,6 +34,10 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
 
   // Estados para animações mágicas
   bool _showMagicLoading = false;
+  
+  // Estados para animação de gravação de áudio
+  late AnimationController _pulsingController;
+  late Animation<double> _pulsingAnimation;
 
   // Estados para speech-to-text
   final SpeechToText _speechToText = SpeechToText();
@@ -52,6 +56,19 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     super.initState();
     _project = model.ProjectApplicationData.getProjectById(widget.projectId)!;
     _pageController = PageController();
+
+    // Initialize animation controller for pulsing effect
+    _pulsingController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+    _pulsingAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _pulsingController,
+      curve: Curves.easeInOut,
+    ));
 
     // Initialize form keys for each step
     for (int i = 0; i < _project.steps.length; i++) {
@@ -81,6 +98,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _pulsingController.dispose();
     // Dispose text controllers
     for (final controller in _textControllers.values) {
       controller.dispose();
@@ -132,6 +150,8 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
           ),
           // Overlay de loading mágico
           _buildMagicLoadingOverlay(),
+          // Overlay de gravação de áudio
+          _buildAudioRecordingOverlay(),
         ],
       ),
     );
@@ -333,6 +353,116 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     );
   }
 
+  // Widget para animação de gravação de áudio
+  Widget _buildAudioRecordingOverlay() {
+    // Verificar se há algum campo sendo gravado
+    bool isAnyFieldRecording = _isListeningByField.values.any((isRecording) => isRecording);
+    if (!isAnyFieldRecording) return const SizedBox.shrink();
+
+    // Iniciar animação pulsante se estiver gravando
+    if (isAnyFieldRecording && !_pulsingController.isAnimating) {
+      _pulsingController.repeat(reverse: true);
+    }
+
+    return Container(
+      color: Colors.black.withValues(alpha: 0.3),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 20,
+                spreadRadius: 5,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Ícone de microfone animado com pulsação contínua
+              AnimatedBuilder(
+                animation: _createPulsingAnimation(),
+                builder: (context, child) {
+                  return Transform.scale(
+                    scale: 0.8 + (0.4 * _createPulsingAnimation().value),
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.darkOrange,
+                            AppColors.darkOrange.withValues(alpha: 0.8),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.darkOrange.withValues(alpha: 0.3 + (0.2 * _createPulsingAnimation().value)),
+                            blurRadius: 20 + (10 * _createPulsingAnimation().value),
+                            spreadRadius: 5 + (3 * _createPulsingAnimation().value),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.mic,
+                        color: Colors.white,
+                        size: 40,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 20),
+              // Texto animado
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 1500),
+                tween: Tween(begin: 0.0, end: 1.0),
+                builder: (context, value, child) {
+                  return Opacity(
+                    opacity: value,
+                    child: const Text(
+                      'Gravando áudio...',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.darkOrange,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+              // Indicador de progresso pulsante
+              SizedBox(
+                width: 200,
+                child: TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 1000),
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  builder: (context, value, child) {
+                    return LinearProgressIndicator(
+                      backgroundColor: Colors.grey[300],
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        Colors.yellow,
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // Verifica se o campo deve ter o botão da IA
   bool _shouldShowAIButton(model.FormField field) {
     // Apenas campos de texto e textArea podem ter IA
@@ -342,6 +472,65 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     }
 
     // Lista de campos que não devem ter IA (informações pessoais e campos específicos)
+    final excludedFields = [
+      'cargo_unidade',
+      'publico_beneficiado',
+      'duracao_periodicidade',
+      'stack_tecnologia',
+      'aplicabilidade_trl',
+      'tema_desafio',
+      'tema_imersao',
+      'tema_multiplicar',
+      'area_cientifica',
+      'tipo_ideia',
+      'tema_curso',
+      'tema_talk',
+      'tipo_evento',
+      'formato',
+      'duracao_formato',
+    ];
+
+    // Verifica se o campo está na lista de exclusão
+    if (excludedFields.contains(field.id)) {
+      return false;
+    }
+
+    // Verifica se o label contém palavras que indicam informações pessoais
+    final personalInfoKeywords = [
+      'cargo',
+      'unidade',
+      'nome',
+      'email',
+      'telefone',
+      'endereço',
+      'cpf',
+      'rg',
+      'matrícula',
+      'funcionário',
+      'colaborador',
+      'pessoa',
+      'individual',
+    ];
+
+    final labelLower = field.label.toLowerCase();
+    for (final keyword in personalInfoKeywords) {
+      if (labelLower.contains(keyword)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  // Verifica se o campo deve ter o botão de áudio
+  bool _shouldShowAudioButton(model.FormField field) {
+    // Apenas campos de texto e textArea podem ter gravação de áudio
+    if (field.type != model.FieldType.text &&
+        field.type != model.FieldType.textArea) {
+      return false;
+    }
+
+    // Lista de campos que não devem ter gravação de áudio (informações pessoais e campos específicos)
     final excludedFields = [
       'cargo_unidade',
       'publico_beneficiado',
@@ -413,6 +602,10 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
               if (widget.applicationMode == ApplicationMode.aiAssisted &&
                   _shouldShowAIButton(field))
                 _buildAIFlashlightButton(field),
+              // Botão de áudio como lanterna no canto superior direito
+              if (widget.applicationMode == ApplicationMode.audio &&
+                  _shouldShowAudioButton(field))
+                _buildAudioFlashlightButton(field),
             ],
           ),
           const SizedBox(height: 8),
@@ -910,7 +1103,9 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
       });
 
       // Fechar o teclado primeiro
-      FocusScope.of(context).unfocus();
+      if (mounted) {
+        FocusScope.of(context).unfocus();
+      }
 
       // Aguardar um pouco para o teclado fechar completamente
       await Future.delayed(const Duration(milliseconds: 300));
@@ -954,7 +1149,9 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
       });
 
       // Fechar o teclado primeiro
-      FocusScope.of(context).unfocus();
+      if (mounted) {
+        FocusScope.of(context).unfocus();
+      }
 
       // Aguardar um pouco para o teclado fechar completamente
       await Future.delayed(const Duration(milliseconds: 300));
@@ -1406,14 +1603,6 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     setState(() {});
   }
 
-  void _stopListeningForField(String fieldId) {
-    _speechToText.stop();
-    _silenceTimers[fieldId]?.cancel();
-    _silenceTimers[fieldId] = null;
-    setState(() {
-      _isListeningByField[fieldId] = false;
-    });
-  }
 
   Widget _buildAIFlashlightButton(model.FormField field) {
     final isEmpty = (_formData[field.id] ?? '').isEmpty;
@@ -1444,51 +1633,94 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
     );
   }
 
+  Widget _buildAudioFlashlightButton(model.FormField field) {
+    final isRecording = _isListeningByField[field.id] ?? false;
+
+    return Container(
+      margin: const EdgeInsets.only(left: 8),
+      child: IconButton(
+        style: IconButton.styleFrom(
+          backgroundColor: isRecording ? AppColors.darkOrange : AppColors.darkOrange.withValues(alpha: 0.8),
+          foregroundColor: AppColors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+            side: BorderSide(color: isRecording ? AppColors.darkOrange : AppColors.darkOrange.withValues(alpha: 0.8)),
+          ),
+        ),
+        icon: Icon(
+          isRecording ? Icons.stop : Icons.mic,
+          size: 20,
+        ),
+        onPressed: () => _startAudioRecording(field),
+      ),
+    );
+  }
+
   Widget? _buildSuffixIcons(model.FormField field) {
     List<Widget> icons = [];
 
-    // Botão de microfone para modo áudio
-    if (widget.applicationMode == ApplicationMode.audio) {
-      final isListening = _isListeningByField[field.id] ?? false;
-      icons.add(
-        AvatarGlow(
-          animate: isListening,
-          glowColor: Colors.blue,
-          duration: const Duration(milliseconds: 2000),
-          repeat: true,
-          child: IconButton(
-            icon: Icon(
-              isListening ? Icons.stop : Icons.mic,
-              color: isListening ? Colors.red : Colors.blue,
-              size: 20,
-            ),
-            onPressed: () => _listenToSpeech(field),
-            tooltip: isListening ? 'Parar gravação' : 'Gravar áudio',
-          ),
-        ),
-      );
-    }
+    // Remover botão de microfone do suffix quando estiver no modo áudio
+    // pois agora temos o botão de áudio no topo do campo
+    // if (widget.applicationMode == ApplicationMode.audio) {
+    //   // Botão removido - usando apenas o botão de cima
+    // }
 
     return icons.isNotEmpty
         ? Row(mainAxisSize: MainAxisSize.min, children: icons)
         : null;
   }
 
-  void _listenToSpeech(model.FormField field) async {
-    final fieldId = field.id;
-    final isCurrentlyListening = _isListeningByField[fieldId] ?? false;
 
-    if (!isCurrentlyListening) {
+  void _startSilenceTimer(String fieldId) {
+    _silenceTimers[fieldId]?.cancel();
+    _silenceTimers[fieldId] = Timer(const Duration(seconds: 2), () {
+      // Auto-pausar após 2 segundos de silêncio
+      _stopAudioRecording(fieldId);
+    });
+  }
+
+  void _resetSilenceTimer(String fieldId) {
+    _silenceTimers[fieldId]?.cancel();
+    _startSilenceTimer(fieldId);
+  }
+
+  // Criar animação pulsante
+  Animation<double> _createPulsingAnimation() {
+    return _pulsingAnimation;
+  }
+
+  // Método para iniciar gravação de áudio com animação
+  void _startAudioRecording(model.FormField field) async {
+    final fieldId = field.id;
+    final isCurrentlyRecording = _isListeningByField[fieldId] ?? false;
+
+    if (!isCurrentlyRecording) {
+      // Iniciar gravação
+      setState(() {});
+
+      // Inicializar speech-to-text
       bool available = await _speechToText.initialize(
-        onStatus: (status) => print('onStatus: $status'),
-        onError: (error) => print('onError: $error'),
+        onStatus: (status) {
+          // Debug: Speech-to-text status
+          if (status == 'done' || status == 'notListening') {
+            _stopAudioRecording(fieldId);
+          }
+        },
+        onError: (error) {
+          // Debug: Speech-to-text error
+          _stopAudioRecording(fieldId);
+        },
       );
+
       if (available) {
         setState(() {
           _isListeningByField[fieldId] = true;
           _recognizedTextByField[fieldId] = '';
           _confidenceByField[fieldId] = 1.0;
         });
+
+        // Iniciar animação pulsante
+        _pulsingController.repeat(reverse: true);
 
         // Iniciar timer de silêncio
         _startSilenceTimer(fieldId);
@@ -1506,30 +1738,34 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen> {
 
               // Atualizar o campo de input em tempo real
               if (_textControllers.containsKey(fieldId)) {
-                _textControllers[fieldId]!.text =
-                    _recognizedTextByField[fieldId]!;
+                _textControllers[fieldId]!.text = _recognizedTextByField[fieldId]!;
                 _formData[fieldId] = _recognizedTextByField[fieldId]!;
               }
             });
           },
         );
+      } else {
+        // Se não conseguir inicializar, limpar estado
+        setState(() {});
+        _showErrorDialog('Não foi possível acessar o microfone');
       }
     } else {
-      _stopListeningForField(fieldId);
+      _stopAudioRecording(fieldId);
     }
   }
 
-  void _startSilenceTimer(String fieldId) {
+  // Método para parar gravação de áudio
+  void _stopAudioRecording(String fieldId) {
+    _speechToText.stop();
     _silenceTimers[fieldId]?.cancel();
-    _silenceTimers[fieldId] = Timer(const Duration(seconds: 2), () {
-      // Auto-pausar após 2 segundos de silêncio
-      _stopListeningForField(fieldId);
+    _silenceTimers[fieldId] = null;
+    
+    // Parar animação pulsante
+    _pulsingController.stop();
+    
+    setState(() {
+      _isListeningByField[fieldId] = false;
     });
-  }
-
-  void _resetSilenceTimer(String fieldId) {
-    _silenceTimers[fieldId]?.cancel();
-    _startSilenceTimer(fieldId);
   }
 }
 
