@@ -2,7 +2,9 @@ import 'package:eurohive/screens/login_screen.dart';
 import 'package:eurohive/screens/main_screen.dart';
 import 'package:eurohive/screens/profile_screen.dart';
 import 'package:eurohive/screens/application_method_choice_screen.dart';
+import 'package:eurohive/screens/application_details_screen.dart';
 import 'package:eurohive/screens/onboarding_screen.dart';
+import 'package:eurohive/models/user_application.dart';
 import 'package:flutter/material.dart';
 
 class AppRoutes {
@@ -12,6 +14,7 @@ class AppRoutes {
   static const main = '/main';
   static const profile = '/profile';
   static const applicationMethodChoice = '/application-method-choice';
+  static const applicationDetails = '/application-details';
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -46,6 +49,13 @@ class AppRoutes {
         return MaterialPageRoute(
           builder: (_) => ApplicationMethodChoiceScreen(
             projectId: args['projectId'],
+          ),
+        );
+      case applicationDetails:
+        final application = settings.arguments as UserApplication;
+        return MaterialPageRoute(
+          builder: (_) => ApplicationDetailsScreen(
+            application: application,
           ),
         );
       default:

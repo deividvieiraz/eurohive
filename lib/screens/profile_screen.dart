@@ -1,5 +1,8 @@
 import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
+import 'package:eurohive/models/user_application.dart';
+import 'package:eurohive/services/user_application_service.dart';
+import 'package:eurohive/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -13,6 +16,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String name = "João Silva";
   String email = "joao.silva@eurohive.com";
   String role = "Desenvolvedor Sênior";
+
+  final UserApplicationService _applicationService = UserApplicationService();
+  List<UserApplication> _applications = [];
+  Map<String, int> _stats = {};
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadApplications();
+  }
+
+  Future<void> _loadApplications() async {
+    try {
+      final applications = await _applicationService.getUserApplications();
+      final stats = await _applicationService.getApplicationStats();
+
+      setState(() {
+        _applications = applications;
+        _stats = stats;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,18 +75,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
       pinned: true,
       backgroundColor: AppColors.black,
       flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(bottom: 50),
-        title: const Center(
-          child: Text(
-            'Perfil',
-            style: TextStyle(
-              color: AppColors.white,
-              fontWeight: FontWeight.bold,
-            ),
+        background: Container(
+          color: AppColors.black,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.end, // joga pro fundo
+            children: const [
+              SizedBox(height: 15), // controla a distância do topo
+              Text(
+                'Perfil',
+                style: TextStyle(
+                  color: AppColors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
+              ),
+              SizedBox(height: 40), // empurra mais pra baixo se quiser
+            ],
           ),
         ),
       ),
-
       actions: [
         IconButton(
           icon: const Icon(Icons.edit_square, color: AppColors.white),
@@ -127,11 +165,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
         children: [
           _buildStatItem(
             'Projetos\nAplicados',
-            '12',
+            '${_stats['total'] ?? 0}',
             Icons.assignment_turned_in,
           ),
           _buildStatDivider(),
-          _buildStatItem('Projetos\nAprovados', '8', Icons.check_circle),
+          _buildStatItem(
+            'Projetos\nAprovados',
+            '${_stats['approved'] ?? 0}',
+            Icons.check_circle,
+          ),
           _buildStatDivider(),
           _buildStatItem('Curtidas\nRecebidas', '156', Icons.favorite),
         ],
@@ -187,117 +229,201 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          _buildProjectCard(
-            'Vem Crescer',
-            'Programa de capacitação e desenvolvimento profissional',
-            'Em análise',
-            AppColors.blue,
-            Icons.trending_up,
-          ),
-          const SizedBox(height: 12),
-          _buildProjectCard(
-            'Kaizen Blitz',
-            'Evento de melhoria rápida em times multifuncionais',
-            'Aprovado',
-            Colors.green,
-            Icons.flash_on,
-          ),
-          const SizedBox(height: 12),
-          _buildProjectCard(
-            'Formação de Líderes',
-            'Programa de desenvolvimento de habilidades de liderança',
-            'Em análise',
-            Colors.purple,
-            Icons.people,
-          ),
-          const SizedBox(height: 12),
-          _buildProjectCard(
-            'CLIC',
-            'Programa de inovação interna da empresa',
-            'Aprovado',
-            Colors.orange,
-            Icons.lightbulb,
-          ),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_applications.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: const Center(
+                child: Text(
+                  'Nenhuma aplicação encontrada.\nAplique para um projeto para vê-lo aqui!',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+              ),
+            )
+          else
+            ..._applications.take(4).map((application) {
+              return Column(
+                children: [
+                  _buildApplicationCard(application),
+                  const SizedBox(height: 12),
+                ],
+              );
+            }),
         ],
       ),
     );
   }
 
-  Widget _buildProjectCard(
-    String title,
-    String description,
-    String status,
-    Color color,
-    IconData icon,
-  ) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 5,
-            offset: const Offset(0, 1),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+  Widget _buildApplicationCard(UserApplication application) {
+    final statusColor = _getStatusColor(application.status);
+    final statusIcon = _getStatusIcon(application.status);
+
+    return GestureDetector(
+      onTap: () => _navigateToApplicationDetails(application),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.withValues(alpha: 0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 5,
+              offset: const Offset(0, 1),
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.black,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(statusIcon, color: statusColor, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    application.projectName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.black,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  description,
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: status == 'Aprovado'
-                  ? Colors.green.withValues(alpha: 0.1)
-                  : Colors.orange.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              status,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: status == 'Aprovado' ? Colors.green : Colors.orange,
+                  const SizedBox(height: 2),
+                  Text(
+                    application.description,
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Prot: ${application.protocolNumber.split('-').last}',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 1,
+                        child: Text(
+                          _formatDate(application.submittedAt),
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey,
+                          ),
+                          textAlign: TextAlign.end,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                application.status.displayName,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: statusColor,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  Color _getStatusColor(ApplicationStatus status) {
+    switch (status) {
+      case ApplicationStatus.submitted:
+        return Colors.blue;
+      case ApplicationStatus.underReview:
+        return Colors.orange;
+      case ApplicationStatus.approved:
+        return Colors.green;
+      case ApplicationStatus.rejected:
+        return Colors.red;
+      case ApplicationStatus.inProgress:
+        return Colors.purple;
+      case ApplicationStatus.completed:
+        return Colors.teal;
+    }
+  }
+
+  IconData _getStatusIcon(ApplicationStatus status) {
+    switch (status) {
+      case ApplicationStatus.submitted:
+        return Icons.send;
+      case ApplicationStatus.underReview:
+        return Icons.search;
+      case ApplicationStatus.approved:
+        return Icons.check_circle;
+      case ApplicationStatus.rejected:
+        return Icons.cancel;
+      case ApplicationStatus.inProgress:
+        return Icons.play_circle;
+      case ApplicationStatus.completed:
+        return Icons.done_all;
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date).inDays;
+
+    if (difference == 0) {
+      return 'Hoje';
+    } else if (difference == 1) {
+      return 'Ontem';
+    } else if (difference < 7) {
+      return '$difference dias atrás';
+    } else if (difference < 30) {
+      final weeks = (difference / 7).floor();
+      return '$weeks semana${weeks > 1 ? 's' : ''} atrás';
+    } else {
+      final months = (difference / 30).floor();
+      return '$months mês${months > 1 ? 'es' : ''} atrás';
+    }
+  }
+
+  void _navigateToApplicationDetails(UserApplication application) {
+    Navigator.pushNamed(
+      context,
+      AppRoutes.applicationDetails,
+      arguments: application,
     );
   }
 

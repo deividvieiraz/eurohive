@@ -1,5 +1,7 @@
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/models/project_application_model.dart' as model;
+import 'package:eurohive/models/user_application.dart';
+import 'package:eurohive/services/user_application_service.dart';
 import 'package:eurohive/routes/app_routes.dart';
 import 'package:eurohive/screens/application_method_choice_screen.dart';
 import 'package:eurohive/services/groq_service.dart';
@@ -1034,20 +1036,39 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen>
     });
   }
 
-  void _submitApplication() {
+  void _submitApplication() async {
     if (_validateCurrentStep()) {
-      // Simular envio da aplicação
-      final protocolNumber = 'PROT-${DateTime.now().millisecondsSinceEpoch}';
+      try {
+        // Criar aplicação usando o serviço
+        final application = await UserApplicationService().createApplication(
+          projectId: widget.projectId,
+          formData: _formData,
+        );
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ApplicationSuccessScreen(
-            projectName: _project.projectName,
-            protocolNumber: protocolNumber,
-          ),
-        ),
-      );
+        // Navegar para tela de sucesso
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ApplicationSuccessScreen(
+                projectName: _project.projectName,
+                protocolNumber: application.protocolNumber,
+                application: application,
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        // Em caso de erro, mostrar mensagem
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Erro ao enviar aplicação: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -1772,11 +1793,13 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen>
 class ApplicationSuccessScreen extends StatefulWidget {
   final String projectName;
   final String protocolNumber;
+  final UserApplication application;
 
   const ApplicationSuccessScreen({
     super.key,
     required this.projectName,
     required this.protocolNumber,
+    required this.application,
   });
 
   @override
@@ -2009,7 +2032,7 @@ class _ApplicationSuccessScreenState extends State<ApplicationSuccessScreen>
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushReplacementNamed(context, AppRoutes.main);
+                    Navigator.pushReplacementNamed(context, AppRoutes.profile);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.black,
@@ -2023,10 +2046,10 @@ class _ApplicationSuccessScreenState extends State<ApplicationSuccessScreen>
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.home_rounded, size: 20),
+                      Icon(Icons.person_rounded, size: 20),
                       SizedBox(width: 8),
                       Text(
-                        'Voltar ao Início',
+                        'Ver Meu Perfil',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
