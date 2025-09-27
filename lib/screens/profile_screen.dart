@@ -248,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             )
           else
-            ..._applications.take(4).map((application) {
+            ..._applications.reversed.map((application) {
               return Column(
                 children: [
                   _buildApplicationCard(application),
@@ -451,27 +451,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 final projects = [
                   {
                     'title': 'Hackathon',
-                    'color': Colors.green,
+                    'color': AppColors.cyan,
                     'icon': Icons.event,
                   },
                   {
                     'title': 'Challenge',
-                    'color': Colors.red,
+                    'color': AppColors.cyan,
                     'icon': Icons.psychology,
                   },
                   {
                     'title': 'Imersões',
-                    'color': Colors.teal,
+                    'color': AppColors.pink,
                     'icon': Icons.school,
                   },
                   {
                     'title': 'Multiplicadores',
-                    'color': Colors.indigo,
+                    'color': AppColors.pink,
                     'icon': Icons.share,
                   },
                   {
                     'title': 'Euron Hub',
-                    'color': Colors.amber,
+                    'color': AppColors.pink,
                     'icon': Icons.hub,
                   },
                 ];

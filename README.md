@@ -1,6 +1,6 @@
 # EuroHive
 
-Uma plataforma social para desenvolvedores compartilharem ideias, projetos e se conectarem com outros profissionais da área de tecnologia.
+Uma plataforma social para colaboradores eurofarma compartilharem ideias, projetos e se conectarem.
 
 ## 🚀 Funcionalidades
 
@@ -179,8 +179,8 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 ## 👨‍💻 Autor
 
 **EuroHive Team**
-- Desenvolvido com ❤️ para a comunidade de desenvolvedores
+- Desenvolvido com ❤️ para a comunidade de colaboradores Eurofarma
 
 ---
 
-**EuroHive** - Conectando desenvolvedores, compartilhando ideias, construindo o futuro! 🚀
+**EuroHive** - Conectando pessoas, compartilhando ideias, construindo o futuro! 🚀

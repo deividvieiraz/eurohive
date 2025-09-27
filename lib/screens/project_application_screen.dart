@@ -9,6 +9,7 @@ import 'package:eurohive/services/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:file_picker/file_picker.dart';
 import 'dart:async';
 
 class ProjectApplicationScreen extends StatefulWidget {
@@ -741,10 +742,11 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen>
         );
 
       case model.FieldType.file:
+        final fileName = _formData[field.id];
         return Container(
           height: 100,
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey),
+            border: Border.all(color: fileName != null ? AppColors.darkOrange : Colors.grey),
             borderRadius: BorderRadius.circular(8),
           ),
           child: InkWell(
@@ -754,13 +756,24 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen>
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.attach_file, size: 32, color: Colors.grey[600]),
+                  Icon(
+                    fileName != null ? Icons.attach_file : Icons.attach_file,
+                    size: 32,
+                    color: fileName != null ? AppColors.darkOrange : Colors.grey[600],
+                  ),
                   const SizedBox(height: 8),
                   Text(
-                    _formData[field.id] != null
-                        ? 'Arquivo selecionado'
+                    fileName != null
+                        ? fileName
                         : 'Toque para anexar arquivo',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    style: TextStyle(
+                      color: fileName != null ? AppColors.darkOrange : Colors.grey[600],
+                      fontSize: 14,
+                      fontWeight: fileName != null ? FontWeight.w500 : FontWeight.normal,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -1029,11 +1042,29 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen>
     return false;
   }
 
-  void _selectFile(String fieldId) {
-    // Simular seleção de arquivo
-    setState(() {
-      _formData[fieldId] = 'arquivo_selecionado.pdf';
-    });
+  void _selectFile(String fieldId) async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.any,
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.single.name.isNotEmpty) {
+        setState(() {
+          _formData[fieldId] = result.files.single.name;
+        });
+      }
+    } catch (e) {
+      // Em caso de erro, mostrar mensagem
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erro ao selecionar arquivo: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _submitApplication() async {

@@ -198,3 +198,4 @@ extension ApplicationStatusExtension on ApplicationStatus {
     }
   }
 }
+

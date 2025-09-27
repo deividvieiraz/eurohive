@@ -44,6 +44,7 @@ dependencies:
   speech_to_text: ^7.3.0
   avatar_glow: ^3.0.1
   shared_preferences: ^2.2.2
+  file_picker: ^8.0.0+1
 
 dev_dependencies:
   flutter_test:

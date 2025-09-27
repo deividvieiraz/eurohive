@@ -4,6 +4,8 @@ import 'package:eurohive/screens/profile_screen.dart';
 import 'package:eurohive/screens/application_method_choice_screen.dart';
 import 'package:eurohive/screens/application_details_screen.dart';
 import 'package:eurohive/screens/onboarding_screen.dart';
+import 'package:eurohive/screens/settings_screen.dart';
+import 'package:eurohive/screens/help_screen.dart';
 import 'package:eurohive/models/user_application.dart';
 import 'package:flutter/material.dart';
 
@@ -15,9 +17,11 @@ class AppRoutes {
   static const profile = '/profile';
   static const applicationMethodChoice = '/application-method-choice';
   static const applicationDetails = '/application-details';
+  static const settings = '/settings';
+  static const help = '/help';
 
-  static Route<dynamic> generateRoute(RouteSettings settings) {
-    switch (settings.name) {
+  static Route<dynamic> generateRoute(RouteSettings routeSettings) {
+    switch (routeSettings.name) {
       case onboarding:
         return PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => const OnboardingScreen(),
@@ -45,19 +49,23 @@ class AppRoutes {
       case profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case applicationMethodChoice:
-        final args = settings.arguments as Map<String, dynamic>;
+        final args = routeSettings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (_) => ApplicationMethodChoiceScreen(
             projectId: args['projectId'],
           ),
         );
       case applicationDetails:
-        final application = settings.arguments as UserApplication;
+        final application = routeSettings.arguments as UserApplication;
         return MaterialPageRoute(
           builder: (_) => ApplicationDetailsScreen(
             application: application,
           ),
         );
+      case settings:
+        return MaterialPageRoute(builder: (_) => const SettingsScreen());
+      case help:
+        return MaterialPageRoute(builder: (_) => const HelpScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(

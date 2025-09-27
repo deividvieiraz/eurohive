@@ -244,6 +244,7 @@ class _MainScreenState extends State<MainScreen> {
             title: const Text('Configurações'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.settings);
             },
           ),
           ListTile(
@@ -251,6 +252,7 @@ class _MainScreenState extends State<MainScreen> {
             title: const Text('Ajuda'),
             onTap: () {
               Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.help);
             },
           ),
           ListTile(

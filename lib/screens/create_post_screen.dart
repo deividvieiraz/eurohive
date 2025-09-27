@@ -1,3 +1,4 @@
+import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:flutter/material.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/models/posts.dart';
@@ -151,14 +152,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     if (_controller.text.trim().isEmpty) return;
 
     final newPost = Post(
-      author: "Você",
-      username: "@voce",
+      author: "João Silva",
+      username: "@joaosilva",
       content: _controller.text,
       imagePath: "",
+      profileImage: AppAssets.joaoFoto,
       likes: 0,
       comments: 0,
       shares: 0,
-      time: "agora",
+      time: "Agora",
     );
 
     Navigator.pop(context, newPost);
