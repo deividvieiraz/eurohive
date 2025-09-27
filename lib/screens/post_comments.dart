@@ -15,7 +15,6 @@ class PostCommentsScreen extends StatefulWidget {
 class _PostCommentsScreenState extends State<PostCommentsScreen> {
   final TextEditingController _commentController = TextEditingController();
 
-  // Mock inicial de comentários com diferentes personas
   final List<Map<String, dynamic>> _comments = [
     {
       "author": "João Silva",
@@ -51,7 +50,7 @@ class _PostCommentsScreenState extends State<PostCommentsScreen> {
     if (comment.trim().isEmpty) return;
     setState(() {
       _comments.insert(0, {
-        "author": "Você",
+        "author": "João Silva",
         "avatarType": "asset",
         "avatar": AppAssets.joaoFoto,
         "time": "agora mesmo",

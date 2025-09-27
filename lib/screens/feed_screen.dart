@@ -21,7 +21,7 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.lightGray.withOpacity(0.2),
       body: Column(
         children: [
           _buildAppBar(),
@@ -68,7 +68,7 @@ class _FeedScreenState extends State<FeedScreen> {
                       icon: const Icon(
                         Icons.menu,
                         color: AppColors.white,
-                        size: 30,
+                        size: 28,
                       ),
                       onPressed: () {
                         Scaffold.of(context).openDrawer();
@@ -76,9 +76,9 @@ class _FeedScreenState extends State<FeedScreen> {
                     ),
                     IconButton(
                       icon: const Icon(
-                        Icons.notifications_outlined,
+                        Icons.notifications_none_rounded,
                         color: AppColors.white,
-                        size: 30,
+                        size: 28,
                       ),
                       onPressed: () {
                         Scaffold.of(context).openDrawer();
@@ -86,7 +86,7 @@ class _FeedScreenState extends State<FeedScreen> {
                     ),
                   ],
                 ),
-                Image.asset(AppAssets.eurohiveName, height: 25),
+                Image.asset(AppAssets.eurohiveName, height: 28),
               ],
             ),
             Padding(
@@ -107,57 +107,59 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Widget _buildFilterButton(String label, FeedFilter filter) {
-  final bool isSelected = _selectedFilter == filter;
+    final bool isSelected = _selectedFilter == filter;
 
-  return Flexible(
-    child: TextButton(
-      onPressed: () {
-        setState(() {
-          _selectedFilter = filter;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        decoration: BoxDecoration(
-          border: isSelected
-              ? const Border(bottom: BorderSide(color: Colors.white, width: 2))
-              : null,
-        ),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: AppColors.white,
-              fontSize: 18,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+    return Flexible(
+      child: TextButton(
+        onPressed: () {
+          setState(() {
+            _selectedFilter = filter;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            border: isSelected
+                ? const Border(
+                    bottom: BorderSide(color: Colors.white, width: 2),
+                  )
+                : null,
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: AppColors.white,
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w400,
+              ),
             ),
           ),
         ),
       ),
-    ),
-  );
-}
-
+    );
+  }
 
   Widget _buildCreatePostSection() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withAlpha(25),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withAlpha(20),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Row(
         children: [
           const CircleAvatar(
-            backgroundColor: AppColors.blue,
+            radius: 22,
             backgroundImage: AssetImage(AppAssets.joaoFoto),
           ),
           const SizedBox(width: 12),
@@ -185,10 +187,11 @@ class _FeedScreenState extends State<FeedScreen> {
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade300),
                   borderRadius: BorderRadius.circular(25),
+                  color: AppColors.lightGray.withOpacity(0.1),
                 ),
                 child: const Text(
                   'O que você está pensando?',
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                  style: TextStyle(color: Colors.grey, fontSize: 15),
                 ),
               ),
             ),
@@ -218,7 +221,7 @@ class _FeedScreenState extends State<FeedScreen> {
     final filteredPosts = _getFilteredPosts();
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       itemCount: filteredPosts.length,
       itemBuilder: (context, index) {
         final post = filteredPosts[index];
@@ -231,177 +234,206 @@ class _FeedScreenState extends State<FeedScreen> {
     final bool isMyPost = post.author == "Você";
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        color: AppColors.lightGray,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header do post
-              Row(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: AppColors.blue,
-                    child: Text(
-                      post.author.substring(0, 1),
-                      style: const TextStyle(
-                        color: AppColors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+      margin: const EdgeInsets.only(bottom: 14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => PostCommentsScreen(post: post)),
+          );
+        },
+        child: Card(
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          color: AppColors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundImage: post.profileImage != null
+                          ? (post.profileImage!.startsWith("http")
+                                ? NetworkImage(post.profileImage!)
+                                : AssetImage(post.profileImage!)
+                                      as ImageProvider)
+                          : null,
+                      backgroundColor: AppColors.blue,
+                      child: post.profileImage == null
+                          ? Text(
+                              post.author.substring(0, 1),
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : null,
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          post.author,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Text(
-                          '${post.username} • ${post.time}',
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_horiz),
-                    onSelected: (value) {
-                      if (value == 'excluir' && isMyPost) {
-                        setState(() {
-                          _posts.remove(post);
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Post excluído")),
-                        );
-                      } else if (value == 'nao_interessa') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Esse post não será mostrado com frequência",
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            post.author,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
                             ),
                           ),
-                        );
-                      } else if (value == 'ocultar') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Você não verá mais posts assim"),
+                          Text(
+                            '${post.username} • ${post.time}',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
                           ),
-                        );
-                      }
-                    },
-                    itemBuilder: (context) {
-                      if (isMyPost) {
-                        return [
-                          const PopupMenuItem(
-                            value: 'excluir',
-                            child: Text("Excluir post"),
-                          ),
-                        ];
-                      } else {
-                        return [
-                          const PopupMenuItem(
-                            value: 'nao_interessa',
-                            child: Text("Esse post não me interessa"),
-                          ),
-                          const PopupMenuItem(
-                            value: 'ocultar',
-                            child: Text("Não quero mais ver posts assim"),
-                          ),
-                        ];
-                      }
-                    },
+                        ],
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_horiz, color: Colors.grey),
+                      onSelected: (value) {
+                        if (value == 'excluir' && isMyPost) {
+                          setState(() {
+                            _posts.remove(post);
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Post excluído")),
+                          );
+                        } else if (value == 'nao_interessa') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Esse post não será mostrado com frequência",
+                              ),
+                            ),
+                          );
+                        } else if (value == 'ocultar') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Você não verá mais posts assim"),
+                            ),
+                          );
+                        }
+                      },
+                      itemBuilder: (context) {
+                        if (isMyPost) {
+                          return [
+                            const PopupMenuItem(
+                              value: 'excluir',
+                              child: Text("Excluir post"),
+                            ),
+                          ];
+                        } else {
+                          return [
+                            const PopupMenuItem(
+                              value: 'nao_interessa',
+                              child: Text("Esse post não me interessa"),
+                            ),
+                            const PopupMenuItem(
+                              value: 'ocultar',
+                              child: Text("Não quero mais ver posts assim"),
+                            ),
+                          ];
+                        }
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Conteúdo
+                Text(
+                  post.content,
+                  style: const TextStyle(fontSize: 15, height: 1.4),
+                ),
+
+                if (post.imagePath != null && post.imagePath!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      post.imagePath!,
+                      height: 220,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ],
-              ),
 
-              const SizedBox(height: 12),
-
-              Text(post.content, style: const TextStyle(fontSize: 16)),
-
-              if (post.imagePath != null && post.imagePath!.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    post.imagePath!,
-                    height: 200,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                  ),
+
+                // Ações
+                Divider(color: Colors.grey.shade300, height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildActionButton(
+                      icon: post.isLiked
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      label: '${post.likes}',
+                      iconColor: post.isLiked ? Colors.red : Colors.grey[700],
+                      onPressed: () {
+                        setState(() {
+                          if (!post.isLiked) {
+                            post.likes++;
+                            post.isLiked = true;
+                          } else {
+                            post.likes--;
+                            post.isLiked = false;
+                          }
+                        });
+                      },
+                    ),
+                    _buildActionButton(
+                      icon: Icons.repeat,
+                      label: '${post.shares}',
+                      iconColor: post.isShared
+                          ? Colors.green
+                          : Colors.grey[700],
+                      onPressed: () {
+                        setState(() {
+                          if (!post.isShared) {
+                            post.shares++;
+                            post.isShared = true;
+                          } else {
+                            post.shares--;
+                            post.isShared = false;
+                          }
+                        });
+                      },
+                    ),
+                    _buildActionButton(
+                      icon: Icons.chat_bubble_outline,
+                      label: '${post.comments}',
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PostCommentsScreen(post: post),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildActionButton(
+                      icon: Icons.share_outlined,
+                      label: '',
+                      onPressed: () {},
+                    ),
+                  ],
                 ),
               ],
-
-              const SizedBox(height: 16),
-
-              // Ações do post
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildActionButton(
-                    icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
-                    label: '${post.likes}',
-                    iconColor: post.isLiked ? Colors.red : Colors.grey[600],
-                    onPressed: () {
-                      setState(() {
-                        if (!post.isLiked) {
-                          post.likes++;
-                          post.isLiked = true;
-                        } else {
-                          post.likes--;
-                          post.isLiked = false;
-                        }
-                      });
-                    },
-                  ),
-                  _buildActionButton(
-                    icon: Icons.repeat,
-                    label: '${post.shares}',
-                    iconColor: post.isShared ? Colors.green : Colors.grey[600],
-                    onPressed: () {
-                      setState(() {
-                        if (!post.isShared) {
-                          post.shares++;
-                          post.isShared = true;
-                        } else {
-                          post.shares--;
-                          post.isShared = false;
-                        }
-                      });
-                    },
-                  ),
-                  _buildActionButton(
-                    icon: Icons.chat_bubble_outline,
-                    label: '${post.comments}',
-                    onPressed: () async {
-                      await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PostCommentsScreen(post: post),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildActionButton(
-                    icon: Icons.share,
-                    label: '',
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -419,17 +451,17 @@ class _FeedScreenState extends State<FeedScreen> {
       onTap: onPressed,
       borderRadius: BorderRadius.circular(20),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: iconColor ?? Colors.grey[600]),
+            Icon(icon, size: 20, color: iconColor ?? Colors.grey[700]),
             if (label.isNotEmpty) ...[
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               Text(
                 label,
                 style: TextStyle(
-                  color: labelColor ?? Colors.grey[600],
-                  fontSize: 14,
+                  color: labelColor ?? Colors.grey[700],
+                  fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
               ),
