@@ -324,8 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildRecentProjects() {
-    // Pega os 3 primeiros projetos (ou pode usar takeLast para pegar os mais recentes)
-    final recentProjects = projects.take(3).toList();
+    final recentProjects = [projects[0], projects[3], projects[16]];
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
