@@ -6,9 +6,12 @@ class AppColors {
   static const lightBlue = Color(0xFF4486A8);
   static const yellow = Color(0xFFFFF200);
   static const lightOrange = Color(0xFFF7C644);
-  static const darkOrange = Color(0xFFF4AA45);
+  static const darkOrange = Color(0xFFE4A902);
   static const white = Color(0xFFFFFFFF);
   static const lightGray = Color(0xFFE0E2E1);
   static const darkGray = Color(0xFF959BA5);
   static const black = Color(0xFF191B23);
+  static const cyan = Color.fromARGB(255, 84, 170, 170);
+  static const purple = Color(0xFF582994);
+  static const pink = Color(0xFFa30ecd);
 }

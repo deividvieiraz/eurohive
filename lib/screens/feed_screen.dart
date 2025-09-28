@@ -1,0 +1,474 @@
+import 'package:eurohive/core/constants/app_assets.dart';
+import 'package:eurohive/core/constants/app_colors.dart';
+import 'package:eurohive/models/posts.dart';
+import 'package:eurohive/screens/post_comments.dart';
+import 'package:flutter/material.dart';
+import 'create_post_screen.dart';
+
+class FeedScreen extends StatefulWidget {
+  const FeedScreen({super.key});
+
+  @override
+  State<FeedScreen> createState() => _FeedScreenState();
+}
+
+enum FeedFilter { recentes, trending, seguindo }
+
+class _FeedScreenState extends State<FeedScreen> {
+  final List<Post> _posts = demoPosts;
+  FeedFilter _selectedFilter = FeedFilter.recentes;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.lightGray.withOpacity(0.2),
+      body: Column(
+        children: [
+          _buildAppBar(),
+          _buildCreatePostSection(),
+          Expanded(child: _buildPostsList()),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.blue,
+        foregroundColor: AppColors.white,
+        onPressed: () async {
+          final Post? newPost = await Navigator.push<Post?>(
+            context,
+            MaterialPageRoute(builder: (context) => const CreatePostScreen()),
+          );
+
+          if (newPost != null) {
+            setState(() {
+              _posts.insert(0, newPost);
+            });
+          }
+        },
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  Widget _buildAppBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      height: 160,
+      decoration: const BoxDecoration(color: AppColors.black),
+      child: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.menu,
+                        color: AppColors.white,
+                        size: 28,
+                      ),
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.notifications_none_rounded,
+                        color: AppColors.white,
+                        size: 28,
+                      ),
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer();
+                      },
+                    ),
+                  ],
+                ),
+                Image.asset(AppAssets.eurohiveName, height: 28),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, bottom: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildFilterButton("Recentes", FeedFilter.recentes),
+                  _buildFilterButton("Trending", FeedFilter.trending),
+                  _buildFilterButton("Seguindo", FeedFilter.seguindo),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterButton(String label, FeedFilter filter) {
+    final bool isSelected = _selectedFilter == filter;
+
+    return Flexible(
+      child: TextButton(
+        onPressed: () {
+          setState(() {
+            _selectedFilter = filter;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            border: isSelected
+                ? const Border(
+                    bottom: BorderSide(color: Colors.white, width: 2),
+                  )
+                : null,
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: AppColors.white,
+                fontSize: 16,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w400,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreatePostSection() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(20),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          const CircleAvatar(
+            radius: 22,
+            backgroundImage: AssetImage(AppAssets.joaoFoto),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: GestureDetector(
+              onTap: () async {
+                final Post? newPost = await Navigator.push<Post?>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CreatePostScreen(),
+                  ),
+                );
+
+                if (newPost != null) {
+                  setState(() {
+                    _posts.insert(0, newPost);
+                  });
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(25),
+                  color: AppColors.lightGray.withOpacity(0.1),
+                ),
+                child: const Text(
+                  'O que você está pensando?',
+                  style: TextStyle(color: Colors.grey, fontSize: 15),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Post> _getFilteredPosts() {
+    switch (_selectedFilter) {
+      case FeedFilter.recentes:
+        return [..._posts];
+      case FeedFilter.trending:
+        final copy = [..._posts];
+        copy.sort((a, b) => b.likes.compareTo(a.likes));
+        return copy;
+      case FeedFilter.seguindo:
+        final followingAuthors = <String>['@deividvieiraz', '@joaomarcelo'];
+        return _posts
+            .where((p) => followingAuthors.contains(p.username))
+            .toList();
+    }
+  }
+
+  Widget _buildPostsList() {
+    final filteredPosts = _getFilteredPosts();
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: filteredPosts.length,
+      itemBuilder: (context, index) {
+        final post = filteredPosts[index];
+        return _buildPostCard(post);
+      },
+    );
+  }
+
+  Widget _buildPostCard(Post post) {
+    final bool isMyPost = post.author == "Você";
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => PostCommentsScreen(post: post)),
+          );
+        },
+        child: Card(
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          color: AppColors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundImage: post.profileImage != null
+                          ? (post.profileImage!.startsWith("http")
+                                ? NetworkImage(post.profileImage!)
+                                : AssetImage(post.profileImage!)
+                                      as ImageProvider)
+                          : null,
+                      backgroundColor: AppColors.blue,
+                      child: post.profileImage == null
+                          ? Text(
+                              post.author.substring(0, 1),
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            post.author,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          Text(
+                            '${post.username} • ${post.time}',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_horiz, color: Colors.grey),
+                      onSelected: (value) {
+                        if (value == 'excluir' && isMyPost) {
+                          setState(() {
+                            _posts.remove(post);
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Post excluído")),
+                          );
+                        } else if (value == 'nao_interessa') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                "Esse post não será mostrado com frequência",
+                              ),
+                            ),
+                          );
+                        } else if (value == 'ocultar') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Você não verá mais posts assim"),
+                            ),
+                          );
+                        }
+                      },
+                      itemBuilder: (context) {
+                        if (isMyPost) {
+                          return [
+                            const PopupMenuItem(
+                              value: 'excluir',
+                              child: Text("Excluir post"),
+                            ),
+                          ];
+                        } else {
+                          return [
+                            const PopupMenuItem(
+                              value: 'nao_interessa',
+                              child: Text("Esse post não me interessa"),
+                            ),
+                            const PopupMenuItem(
+                              value: 'ocultar',
+                              child: Text("Não quero mais ver posts assim"),
+                            ),
+                          ];
+                        }
+                      },
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Conteúdo
+                Text(
+                  post.content,
+                  style: const TextStyle(fontSize: 15, height: 1.4),
+                ),
+
+                if (post.imagePath != null && post.imagePath!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.asset(
+                      post.imagePath!,
+                      height: 220,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 12),
+
+                // Ações
+                Divider(color: Colors.grey.shade300, height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildActionButton(
+                      icon: post.isLiked
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      label: '${post.likes}',
+                      iconColor: post.isLiked ? Colors.red : Colors.grey[700],
+                      onPressed: () {
+                        setState(() {
+                          if (!post.isLiked) {
+                            post.likes++;
+                            post.isLiked = true;
+                          } else {
+                            post.likes--;
+                            post.isLiked = false;
+                          }
+                        });
+                      },
+                    ),
+                    _buildActionButton(
+                      icon: Icons.repeat,
+                      label: '${post.shares}',
+                      iconColor: post.isShared
+                          ? Colors.green
+                          : Colors.grey[700],
+                      onPressed: () {
+                        setState(() {
+                          if (!post.isShared) {
+                            post.shares++;
+                            post.isShared = true;
+                          } else {
+                            post.shares--;
+                            post.isShared = false;
+                          }
+                        });
+                      },
+                    ),
+                    _buildActionButton(
+                      icon: Icons.chat_bubble_outline,
+                      label: '${post.comments}',
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PostCommentsScreen(post: post),
+                          ),
+                        );
+                      },
+                    ),
+                    _buildActionButton(
+                      icon: Icons.share_outlined,
+                      label: '',
+                      onPressed: () {},
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    Color? iconColor,
+    Color? labelColor,
+  }) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(20),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: iconColor ?? Colors.grey[700]),
+            if (label.isNotEmpty) ...[
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: labelColor ?? Colors.grey[700],
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}

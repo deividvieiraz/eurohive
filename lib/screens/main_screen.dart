@@ -1,0 +1,311 @@
+import 'package:eurohive/core/constants/app_assets.dart';
+import 'package:eurohive/core/constants/app_colors.dart';
+import 'package:eurohive/routes/app_routes.dart';
+import 'package:eurohive/screens/discovery_screen.dart';
+import 'package:eurohive/screens/feed_screen.dart';
+import 'package:eurohive/screens/home_screen.dart';
+import 'package:eurohive/screens/profile_screen.dart';
+import 'package:eurohive/services/auth_service.dart';
+import 'package:flutter/material.dart';
+
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _currentIndex = 0;
+  late PageController _pageController;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final List<Widget> _screens = [
+    const HomeScreen(),
+    const FeedScreen(),
+    const DiscoveryScreen(),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleLogout() async {
+    // Mostra um diálogo de confirmação
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirmar Logout'),
+        content: const Text('Tem certeza que deseja sair?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      await AuthService.logout();
+      
+      if (mounted) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.login,
+          (route) => false,
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: _scaffoldKey,
+      drawer: _buildDrawer(),
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+            },
+            itemCount: _screens.length,
+            itemBuilder: (context, index) {
+              return AnimatedBuilder(
+                animation: _pageController,
+                builder: (context, child) {
+                  double value = 1.0;
+                  if (_pageController.position.haveDimensions) {
+                    value = _pageController.page! - index;
+                    value = (1 - (value.abs() * 0.3)).clamp(0.0, 1.0);
+                  }
+                  return Transform.scale(
+                    scale: value,
+                    child: Opacity(
+                      opacity: value,
+                      child: _screens[index],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 90, right: 90, bottom: 25),
+              child: Container(
+                height: 70,
+                decoration: BoxDecoration(
+                  color: AppColors.white,
+                  borderRadius: BorderRadius.circular(100),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.2),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30),
+                  child: AnimatedBuilder(
+                    animation: _pageController,
+                    builder: (context, child) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildNavItem(0, Icons.home_rounded),
+                          _buildNavItem(1, Icons.people_rounded),
+                          _buildNavItem(2, Icons.explore_rounded),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: const BoxDecoration(color: AppColors.black),
+            child: InkWell(
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation, secondaryAnimation) => const ProfileScreen(),
+                    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                      const begin = Offset(1.0, 0.0);
+                      const end = Offset.zero;
+                      const curve = Curves.easeInOut;
+                      
+                      var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                      var offsetAnimation = animation.drive(tween);
+                      
+                      return SlideTransition(
+                        position: offsetAnimation,
+                        child: FadeTransition(
+                          opacity: animation,
+                          child: child,
+                        ),
+                      );
+                    },
+                    transitionDuration: const Duration(milliseconds: 400),
+                  ),
+                );
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const CircleAvatar(
+                    radius: 30,
+                    backgroundColor: AppColors.white,
+                    backgroundImage: AssetImage(AppAssets.joaoFoto),
+                    //child: Icon(Icons.person, size: 35, color: AppColors.black),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'João Silva',
+                    style: TextStyle(
+                      color: AppColors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Text(
+                    'joao.silva@eurohive.com',
+                    style: TextStyle(color: AppColors.white, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('Meu Perfil'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => const ProfileScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+                    
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+                    
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      ),
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 400),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.settings),
+            title: const Text('Configurações'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.settings);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.help),
+            title: const Text('Ajuda'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.help);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Sair'),
+            onTap: () async {
+              Navigator.pop(context);
+              await _handleLogout();
+            },
+          ),
+        ],
+      ),
+    );
+    }
+
+  Widget _buildNavItem(int index, IconData icon) {
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        },
+        borderRadius: BorderRadius.circular(30),
+        child: SizedBox(
+          height: 70,
+          child: Center(
+            child: AnimatedBuilder(
+              animation: _pageController,
+              builder: (context, child) {
+
+                final isSelected = _currentIndex == index;
+
+                return Container(
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected ? AppColors.blue.withValues(alpha: 0.2) : Colors.transparent,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: isSelected ? AppColors.blue : AppColors.black,
+                      size: 28,
+                    ),
+                  );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+}
