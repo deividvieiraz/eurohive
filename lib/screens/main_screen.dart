@@ -240,6 +240,14 @@ class _MainScreenState extends State<MainScreen> {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.emoji_events),
+            title: const Text('Ranking'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.ranking);
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.settings),
             title: const Text('Configurações'),
             onTap: () {

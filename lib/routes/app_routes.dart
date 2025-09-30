@@ -6,6 +6,7 @@ import 'package:eurohive/screens/application_details_screen.dart';
 import 'package:eurohive/screens/onboarding_screen.dart';
 import 'package:eurohive/screens/settings_screen.dart';
 import 'package:eurohive/screens/help_screen.dart';
+import 'package:eurohive/screens/ranking_screen.dart';
 import 'package:eurohive/models/user_application.dart';
 import 'package:flutter/material.dart';
 
@@ -19,6 +20,7 @@ class AppRoutes {
   static const applicationDetails = '/application-details';
   static const settings = '/settings';
   static const help = '/help';
+  static const ranking = '/ranking';
 
   static Route<dynamic> generateRoute(RouteSettings routeSettings) {
     switch (routeSettings.name) {
@@ -66,6 +68,8 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
       case help:
         return MaterialPageRoute(builder: (_) => const HelpScreen());
+      case ranking:
+        return MaterialPageRoute(builder: (_) => const RankingScreen());
       default:
         return MaterialPageRoute(
           builder: (_) => const Scaffold(

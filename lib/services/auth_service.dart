@@ -8,6 +8,7 @@ class AuthService {
   // Credenciais mockadas
   static const String _mockUsername = 'joao';
   static const String _mockPassword = '123';
+  static const String _mockEmail = 'joao@eurohive.com';
 
   /// Verifica se o usuário está logado
   static Future<bool> isLoggedIn() async {
@@ -50,6 +51,15 @@ class AuthService {
   static Future<String?> getUsername() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_usernameKey);
+  }
+
+  /// Obtém o email do usuário logado
+  static Future<String?> getUserEmail() async {
+    final username = await getUsername();
+    if (username == _mockUsername) {
+      return _mockEmail;
+    }
+    return null;
   }
 
   /// Verifica se o usuário marcou para lembrar
