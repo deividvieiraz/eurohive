@@ -6,7 +6,9 @@ import 'package:eurohive/data/projects_data.dart';
 import 'package:flutter/material.dart';
 
 class DiscoveryScreen extends StatefulWidget {
-  const DiscoveryScreen({super.key});
+  final String? projectToHighlight;
+  
+  const DiscoveryScreen({super.key, this.projectToHighlight});
 
   @override
   State<DiscoveryScreen> createState() => _DiscoveryScreenState();
@@ -14,6 +16,8 @@ class DiscoveryScreen extends StatefulWidget {
 
 class _DiscoveryScreenState extends State<DiscoveryScreen> {
   String _selectedCategory = 'Todos';
+  late ScrollController _scrollController;
+  final GlobalKey _gridKey = GlobalKey();
 
   final List<String> _categories = [
     'Todos',
@@ -30,6 +34,27 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    
+    // Se há um projeto para destacar, aguarda e faz scroll
+    if (widget.projectToHighlight != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          _scrollToProject(widget.projectToHighlight!);
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final filteredProjects = _selectedCategory == 'Todos'
         ? projects
@@ -41,7 +66,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         children: [
           _buildAppBar(),
           _buildCategoryFilter(),
-          Expanded(child: _buildProjectsGrid(filteredProjects)),
+          Expanded(child: _buildProjectsGrid(filteredProjects, widget.projectToHighlight)),
         ],
       ),
     );
@@ -110,8 +135,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     );
   }
 
-  Widget _buildProjectsGrid(List<Map<String, dynamic>> projects) {
+  Widget _buildProjectsGrid(List<Map<String, dynamic>> projects, String? projectToHighlight) {
     return GridView.builder(
+      key: _gridKey,
+      controller: _scrollController,
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
@@ -121,20 +148,32 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) {
-        return _buildProjectCard(projects[index]);
+        final project = projects[index];
+        final isHighlighted = projectToHighlight != null && 
+                             project['title'] == projectToHighlight;
+        return _buildProjectCard(project, isHighlighted);
       },
     );
   }
 
-  Widget _buildProjectCard(Map<String, dynamic> projectData) {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      color: AppColors.white,
-      child: InkWell(
-        onTap: () => _showProjectDetails(projectData),
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
+  Widget _buildProjectCard(Map<String, dynamic> projectData, [bool isHighlighted = false]) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
+      child: Card(
+        elevation: 4,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: isHighlighted ? BorderSide(
+            color: projectData['color'],
+            width: 3,
+          ) : BorderSide.none,
+        ),
+        color: AppColors.white,
+        child: InkWell(
+          onTap: () => _showProjectDetails(projectData),
+          borderRadius: BorderRadius.circular(16),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
@@ -223,7 +262,41 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           ],
         ),
       ),
-    );
+    ));
+  }
+
+  void _scrollToProject(String projectTitle) {
+    final filteredProjects = _selectedCategory == 'Todos'
+        ? projects
+        : projects.where((p) => p['category'] == _selectedCategory).toList();
+    
+    final projectIndex = filteredProjects.indexWhere((p) => p['title'] == projectTitle);
+    
+    if (projectIndex != -1) {
+      // Calcula a posição aproximada do projeto no grid
+      final row = projectIndex ~/ 2; // 2 colunas por linha
+      final itemHeight = 200.0; // Altura aproximada de cada item
+      final spacing = 16.0;
+      final padding = 16.0; // Padding do GridView
+      
+      // Calcula a posição do card
+      final cardPosition = row * (itemHeight + spacing) + padding + 500;
+      
+      // Calcula a altura visível da tela (descontando app bar e filtros)
+      final screenHeight = MediaQuery.of(context).size.height;
+      final appBarHeight = 120.0; // Altura aproximada do app bar
+      final filterHeight = 60.0; // Altura aproximada do filtro
+      final visibleHeight = screenHeight - appBarHeight - filterHeight;
+      
+      // Calcula o offset para centralizar o card
+      final targetOffset = cardPosition - (visibleHeight / 2) + (itemHeight / 2);
+      
+      _scrollController.animateTo(
+        targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 800),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   void _showProjectDetails(Map<String, dynamic> project) {

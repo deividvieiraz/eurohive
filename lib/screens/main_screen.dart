@@ -9,7 +9,10 @@ import 'package:eurohive/services/auth_service.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int? initialTabIndex;
+  final Map<String, dynamic>? projectToShow;
+  
+  const MainScreen({super.key, this.initialTabIndex, this.projectToShow});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -20,16 +23,17 @@ class _MainScreenState extends State<MainScreen> {
   late PageController _pageController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final List<Widget> _screens = [
+  List<Widget> get _screens => [
     const HomeScreen(),
     const FeedScreen(),
-    const DiscoveryScreen(),
+    DiscoveryScreen(projectToHighlight: widget.projectToShow?['title']),
   ];
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _currentIndex = widget.initialTabIndex ?? 0;
+    _pageController = PageController(initialPage: _currentIndex);
   }
 
   @override
@@ -315,5 +319,6 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
+
 
 }

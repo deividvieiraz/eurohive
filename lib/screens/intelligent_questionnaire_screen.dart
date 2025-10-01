@@ -525,9 +525,12 @@ class _IntelligentQuestionnaireScreenState
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
+      child: InkWell(
+        onTap: () => _navigateToProjectDetails(project),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
           children: [
             // Ícone do projeto
             Container(
@@ -624,8 +627,28 @@ class _IntelligentQuestionnaireScreenState
           ],
         ),
       ),
-    );
+    ));
   }
+
+  void _navigateToProjectDetails(Map<String, dynamic> project) {
+    // Primeiro, volta para a discovery screen
+    Navigator.pop(context);
+    
+    // Aguarda um pequeno delay para garantir que a navegação foi concluída
+    Future.delayed(const Duration(milliseconds: 100), () {
+      // Verifica se o widget ainda está montado antes de usar o context
+      if (mounted) {
+        // Navega para a discovery screen e abre o modal do projeto
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/main',
+          (route) => false,
+          arguments: {'tabIndex': 2, 'projectToShow': project}, // Índice 2 = Discovery Screen
+        );
+      }
+    });
+  }
+
 
   Widget _buildLoadingOverlay() {
     if (!_showLoading) return const SizedBox.shrink();

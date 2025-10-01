@@ -47,7 +47,13 @@ class AppRoutes {
           transitionDuration: const Duration(milliseconds: 500),
         );
       case main:
-        return MaterialPageRoute(builder: (_) => const MainScreen());
+        final args = routeSettings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => MainScreen(
+            initialTabIndex: args?['tabIndex'],
+            projectToShow: args?['projectToShow'],
+          ),
+        );
       case profile:
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
       case applicationMethodChoice:
