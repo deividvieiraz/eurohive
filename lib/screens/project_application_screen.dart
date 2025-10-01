@@ -763,9 +763,7 @@ class _ProjectApplicationScreenState extends State<ProjectApplicationScreen>
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    fileName != null
-                        ? fileName
-                        : 'Toque para anexar arquivo',
+                    fileName ?? 'Toque para anexar arquivo',
                     style: TextStyle(
                       color: fileName != null ? AppColors.darkOrange : Colors.grey[600],
                       fontSize: 14,

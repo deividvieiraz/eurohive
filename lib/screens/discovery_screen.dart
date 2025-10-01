@@ -1,6 +1,7 @@
 import 'package:eurohive/core/constants/app_assets.dart';
 import 'package:eurohive/core/constants/app_colors.dart';
 import 'package:eurohive/screens/application_method_choice_screen.dart';
+import 'package:eurohive/screens/questionnaire_intro_screen.dart';
 import 'package:eurohive/data/projects_data.dart';
 import 'package:flutter/material.dart';
 
@@ -85,20 +86,25 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: const BoxDecoration(color: AppColors.black),
-      height: 200,
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Descubra onde sua\nideia pode fazer\na diferença!",
-                style: TextStyle(color: AppColors.white, fontSize: 24),
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Descubra onde sua\nideia pode fazer\na diferença!",
+                    style: TextStyle(color: AppColors.white, fontSize: 24),
+                  ),
+                  Image.asset(AppAssets.eurofarmaWorld, height: 75),
+                ],
               ),
-              Image.asset(AppAssets.eurofarmaWorld, height: 75),
-            ],
-          ),
+            ),
+            const SizedBox(height: 8),
+            _buildQuestionnaireCard()
+          ],
         ),
       ),
     );
@@ -361,6 +367,71 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildQuestionnaireCard() {
+    return Material(
+      color: AppColors.black,
+      child: InkWell(
+        onTap: () => _navigateToQuestionnaire(),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.black,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Encontre seu Projeto Ideal',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                size: 20,
+                color: AppColors.darkOrange,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _navigateToQuestionnaire() {
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const QuestionnaireIntroScreen(),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+
+          return SlideTransition(
+            position: offsetAnimation,
+            child: FadeTransition(opacity: animation, child: child),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 400),
       ),
     );
   }
