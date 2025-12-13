@@ -5,39 +5,29 @@ Uma plataforma social para colaboradores eurofarma compartilharem ideias, projet
 ## 🚀 Funcionalidades
 
 ### Tela de Login
-- Interface moderna com design glassmorphism
-- Login com email e senha
-- Login com Google
-- Opção "Lembrar de mim"
-- Link para recuperação de senha
-- Link para cadastro
 
 ### Home Screen
-- **Menu lateral** com navegação e informações do usuário
-- **Cards de estatísticas** (Posts, Curtidas, Seguidores)
-- **Seção de notícias** com cards horizontais
-- **Projetos recentes** em lista
-- Design responsivo e moderno
 
 ### Feed Screen (Tipo Twitter)
-- **Criação de posts** com texto e imagens
-- **Timeline de posts** com interações
-- **Ações de interação**: Comentar, Repostar, Curtir, Compartilhar
-- **Interface similar ao Twitter** com cards de posts
-- **Floating Action Button** para criar novos posts
 
 ### Discovery Screen
-- **Filtros por categoria**: Mobile, Web, AI/ML, Blockchain, IoT, Gaming
-- **Grid de projetos** com cards visuais
-- **Sistema de avaliação** com estrelas e curtidas
-- **Modal de detalhes** do projeto
-- **Funcionalidade de aplicação** em projetos
-- **Categorização visual** por cores
 
 ### Navegação
-- **Bottom Navigation Bar** com 3 guias principais
-- **Navegação fluida** entre telas
-- **Estado persistente** das telas
+
+- ## 📸 Screenshots do App
+
+<p align="center">
+  <img src="assets/images/image.png" width="180" alt="Tela Inicial" />
+  <img src="assets/images/image2.png" width="180" alt="Feed de Ideias" />
+   <img src="assets/images/image3.png" width="180" alt="Hub de Inovação" />
+</p>
+
+## ▶️ Demonstração do App
+
+🎥 **Vídeo no YouTube mostrando o app em funcionamento:**  
+👉 [Demonstração do App](https://youtu.be/5tJ5LR6r554?si=2aNaqV_5N6Ph_1ux)
+
+---
 
 ## 🛠️ Tecnologias Utilizadas
 
@@ -68,23 +58,6 @@ lib/
 │   └── app_routes.dart
 └── main.dart
 ```
-
-## 🎨 Design System
-
-### Cores Principais
-- **Azul Principal**: `#0A5481`
-- **Azul Claro**: `#4486A8`
-- **Azul Escuro**: `#090A36`
-- **Branco**: `#FFFFFF`
-- **Cinza Claro**: `#E0E2E1`
-- **Cinza Escuro**: `#959BA5`
-
-### Componentes
-- Cards com sombras suaves
-- Gradientes modernos
-- Bordas arredondadas
-- Ícones consistentes
-- Tipografia hierárquica
 
 ## 🚀 Como Executar
 
@@ -150,27 +123,6 @@ O projeto está configurado para:
 - Filtros por categoria
 - Cards visuais de projetos
 - Sistema de aplicação
-
-## 🎯 Próximos Passos
-
-- [ ] Implementar autenticação real
-- [ ] Adicionar backend (Firebase/API)
-- [ ] Implementar notificações push
-- [ ] Adicionar chat entre usuários
-- [ ] Implementar upload de imagens
-- [ ] Adicionar sistema de busca
-- [ ] Implementar favoritos
-- [ ] Adicionar perfil do usuário
-- [ ] Implementar configurações
-- [ ] Adicionar testes unitários e de widget
-
-## 🤝 Contribuição
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
 
 ## 📄 Licença
 
